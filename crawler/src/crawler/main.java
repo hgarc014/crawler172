@@ -1,17 +1,7 @@
 package crawler;
 
-import twitter4j.HashtagEntity;
-import twitter4j.JSONException;
-import twitter4j.JSONObject;
-import twitter4j.StallWarning;
-import twitter4j.Status;
-import twitter4j.StatusDeletionNotice;
-import twitter4j.StatusListener;
-import twitter4j.TwitterStream;
-import twitter4j.TwitterStreamFactory;
-import twitter4j.UserMentionEntity;
+import twitter4j.*;
 import twitter4j.auth.AccessToken;
-import twitter4j.conf.ConfigurationBuilder;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -22,7 +12,7 @@ import java.util.jar.Attributes.Name;
 
 public class main {
 	
-	static String saveFile = "/home/henry/Desktop/tweets.txt";
+	static String saveFile = "/home/henry/Desktop/tweets.json";
 
 	public static void main(String[] args) {
 
