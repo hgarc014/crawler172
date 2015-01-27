@@ -12,6 +12,7 @@ import twitter4j.TwitterStreamFactory;
 import twitter4j.UserMentionEntity;
 import twitter4j.auth.AccessToken;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
@@ -19,31 +20,43 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.jar.Attributes.Name;
 
-public class main {
+public class Main {
 
-	static String saveFile = "/home/henry/Desktop/tweets.json";
+	String outputdir;
+	int fileNumber = 0;
+	long tweetsObtained = 0;
+	long maxTweets;
+	long maxFileSize;
+	String fileName = "tweets" + fileNumber + ".json";
+	String languages;
 
 	public static void main(String[] args) {
+		Main m = new Main();
+		m.crawlTweets(args);
+	}
 
+	public void crawlTweets(String[] args) {
 		// TODO:Parameters to consider for tweets
 		// number of tweets
 		// size of tweet files
 		// outputdir
 		// languages
-		int totalTweets;
-		long size;
-		String outputdir;
-		String languages;
+
+		if (args.length < 4) {
+			System.out.println("Invalid number of arguments");
+			return;
+		}
+		maxTweets = Integer.valueOf(args[0]);
+		maxFileSize = Long.valueOf(args[1]);
+		outputdir = args[2];
+		languages = args[3];
+		System.out.println("Tweets: " + maxTweets + "\nSize of files: "
+				+ maxFileSize + "\nOutputDir: " + outputdir + "\nLanguages: "
+				+ languages);
 
 		// TODO:Parameters to consider for crawling
 		// pages
 		// hops away
-
-		// System.out.println("Args:");
-		// for(String s : args){
-		// System.out.println(s);
-		// }
-		// System.out.println();
 
 		String accToken = "2995123279-tPsou5RS11xE1I682qUtKiIYCRx4FeKCG4rXiGb";
 		String accTokensec = "pQfusO6QK6D8TwkN1MYorMjJWl2brx6fSj6CSfynK0Asw";
@@ -65,7 +78,8 @@ public class main {
 						printInformation(status);
 						saveTweet(status);
 					} else
-						System.out.println("NO LOCATION INFORMATION!! Didn't save tweet...");
+						System.out
+								.println("NO LOCATION INFORMATION!! Didn't save tweet...");
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -106,7 +120,7 @@ public class main {
 		twitterStream.sample();
 	}
 
-	public static void printInformation(Status status) {
+	public void printInformation(Status status) {
 		char[] charArray = new char[20];
 		Arrays.fill(charArray, '-');
 		String line = new String(charArray);
@@ -139,7 +153,8 @@ public class main {
 		System.out.println("\nBody:\n" + status.getText());
 	}
 
-	public static JSONObject createJsonObj(Status status) throws JSONException {
+	public JSONObject createJsonObj(Status status) throws JSONException,
+			IOException {
 		JSONObject j = new JSONObject();
 
 		// important fields
@@ -162,14 +177,24 @@ public class main {
 
 		j.put("Retweets", status.getRetweetCount());
 		j.put("Favorites", status.getFavoriteCount());
-		j.put("TweetPlace", status.getPlace());
+		// j.put("TweetPlace", status.getPlace());
+
+		FileWriter l = new FileWriter(outputdir + "/languagesTest.txt", true);
+		l.write(status.getLang() + "\n");
+		l.close();
 
 		System.out.println("Created Json Object");
 		return j;
 	}
 
-	public static void saveTweet(Status status) throws IOException {
-		FileWriter file = new FileWriter(saveFile, true);
+	public void saveTweet(Status status) throws IOException {
+		if (tweetsObtained >= maxTweets) {
+			System.out.println("Obtained " + tweetsObtained
+					+ " tweets exiting...");
+			System.exit(0);
+		}
+		++tweetsObtained;
+		FileWriter file = new FileWriter(outputdir + "/" + fileName, true);
 		try {
 			JSONObject tweet = createJsonObj(status);
 			file.write(tweet.toString() + "\n");
