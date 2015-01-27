@@ -1,6 +1,15 @@
 package crawler;
 
-import twitter4j.*;
+import twitter4j.HashtagEntity;
+import twitter4j.JSONException;
+import twitter4j.JSONObject;
+import twitter4j.StallWarning;
+import twitter4j.Status;
+import twitter4j.StatusDeletionNotice;
+import twitter4j.StatusListener;
+import twitter4j.TwitterStream;
+import twitter4j.TwitterStreamFactory;
+import twitter4j.UserMentionEntity;
 import twitter4j.auth.AccessToken;
 
 import java.io.FileWriter;
@@ -11,10 +20,30 @@ import java.util.List;
 import java.util.jar.Attributes.Name;
 
 public class main {
-	
+
 	static String saveFile = "/home/henry/Desktop/tweets.json";
 
 	public static void main(String[] args) {
+
+		// TODO:Parameters to consider for tweets
+		// number of tweets
+		// size of tweet files
+		// outputdir
+		// languages
+		int totalTweets;
+		long size;
+		String outputdir;
+		String languages;
+
+		// TODO:Parameters to consider for crawling
+		// pages
+		// hops away
+
+		// System.out.println("Args:");
+		// for(String s : args){
+		// System.out.println(s);
+		// }
+		// System.out.println();
 
 		String accToken = "2995123279-tPsou5RS11xE1I682qUtKiIYCRx4FeKCG4rXiGb";
 		String accTokensec = "pQfusO6QK6D8TwkN1MYorMjJWl2brx6fSj6CSfynK0Asw";
@@ -29,13 +58,19 @@ public class main {
 			@Override
 			public void onStatus(Status status) {
 
-				 try {
-					saveTweet(status);
+				try {
+					if (status.getGeoLocation() != null) {
+						System.out
+								.println("Going to save tweet with the following information....");
+						printInformation(status);
+						saveTweet(status);
+					} else
+						System.out.println("NO LOCATION INFORMATION!! Didn't save tweet...");
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-//				printInformation(status);
+				// printInformation(status);
 			}
 
 			@Override
@@ -107,15 +142,15 @@ public class main {
 	public static JSONObject createJsonObj(Status status) throws JSONException {
 		JSONObject j = new JSONObject();
 
-		//important fields
+		// important fields
 		j.put("TweetID", status.getId());
 		j.put("User", status.getUser().getScreenName());
 		j.put("TweetLanguage", status.getLang());
 		j.put("TweetGeoLoc", status.getGeoLocation());
 		j.put("TweetCreationDate", status.getCreatedAt());
 		j.put("Body", status.getText());
-		
-		//optional fields
+
+		// optional fields
 		j.put("UserFriends", status.getUser().getFriendsCount());
 		j.put("UserFollowers", status.getUser().getFollowersCount());
 		j.put("UserLocation", status.getUser().getLocation());
@@ -124,11 +159,11 @@ public class main {
 		j.put("UserDesc", status.getUser().getDescription());
 		j.put("UserStatus", status.getUser().getStatus());
 		j.put("UserStatusCount", status.getUser().getStatusesCount());
-		
+
 		j.put("Retweets", status.getRetweetCount());
 		j.put("Favorites", status.getFavoriteCount());
 		j.put("TweetPlace", status.getPlace());
-		
+
 		System.out.println("Created Json Object");
 		return j;
 	}
@@ -142,7 +177,7 @@ public class main {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
-//			file.flush();
+			// file.flush();
 			file.close();
 		}
 
