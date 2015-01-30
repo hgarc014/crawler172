@@ -37,12 +37,21 @@ public class Main {
 	String fileName = "tweets" + fileNumber + ".json";
 	String hashName = "hashedTweets.txt";
 
+	FileWriter hashWriter = null;
+	FileWriter tweetWriter = null;
+	File tweetFile = null;
+
 	long tweetsObtained = 0;
 	long maxTweets;
 
 	public static void main(String[] args) {
 		Main m = new Main();
-		m.crawlTweets(args);
+		try {
+			m.crawlTweets(args);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	// Languages:
@@ -76,9 +85,9 @@ public class Main {
 	// th = Thai
 	// en-gb = English UK
 
-	public void crawlTweets(String[] args) {
+	public void crawlTweets(String[] args) throws IOException {
 
-		final HashMap<Long, Integer> m = new HashMap<Long, Integer>();
+		final HashMap<Long, Integer> hash = new HashMap<Long, Integer>();
 
 		if (args.length < 3) {
 			System.out.println("Invalid number of arguments");
@@ -95,23 +104,25 @@ public class Main {
 		}
 		fileSizes *= convertToMB;
 		outputdir = args[2];
-		File f = new File(outputdir + "/" + hashName);
-		if (f.isFile()) {
+		File fillHash = new File(outputdir + "/" + hashName);
+		if (fillHash.isFile()) {
 			System.out.println(hashName
 					+ " was found, Importing already searched Tweets");
 			Charset chs = Charset.forName("US-ASCII");
-			try (BufferedReader r = Files.newBufferedReader(f.toPath(), chs)) {
+			try (BufferedReader r = Files.newBufferedReader(fillHash.toPath(),
+					chs)) {
 				String line = null;
 				while ((line = r.readLine()) != null) {
-					m.put(Long.valueOf(line), 1);
+					hash.put(Long.valueOf(line), 1);
 				}
 			} catch (IOException x) {
 				System.err.println(x.getLocalizedMessage());
 			}
-			// m.put(key, value);
 		}
-//		System.out.println("Tweets: " + maxTweets + "\nfile Sizes: "
-//				+ fileSizes + "\nOutputDir: " + outputdir);
+
+		hashWriter = new FileWriter(outputdir + "/" + hashName, true);
+		tweetWriter = new FileWriter(outputdir + "/" + fileName, true);
+		tweetFile = new File(outputdir + "/" + fileName);
 
 		String accToken = "2995123279-tPsou5RS11xE1I682qUtKiIYCRx4FeKCG4rXiGb";
 		String accTokensec = "pQfusO6QK6D8TwkN1MYorMjJWl2brx6fSj6CSfynK0Asw";
@@ -137,23 +148,13 @@ public class Main {
 					if (tweetsObtained >= maxTweets) {
 						System.out.println("Obtained " + tweetsObtained
 								+ " tweets exiting...");
-						// for(Map.Entry<Long, Integer> entry : m.entrySet()){
-						// Long k = entry.getKey();
-						// FileWriter file = new FileWriter(outputdir +
-						// "/"+hashName, true);
-						// file.write(String.valueOf(k) + "\n");
-						// }
+						hashWriter.close();
+						tweetWriter.close();
 						System.exit(0);
-					} else if (!m.containsKey(status.getId())
+					} else if (!hash.containsKey(status.getId())
 							&& status.getGeoLocation() != null) {
-						m.put(status.getId(), 1);
-						FileWriter file = new FileWriter(outputdir + "/"
-								+ hashName, true);
-						file.write(String.valueOf(status.getId()) + "\n");
-						file.close();
-						// System.out
-						// .println("Going to save tweet with the following information....");
-						// printInformation(status);
+						hash.put(status.getId(), 1);
+						hashWriter.write(String.valueOf(status.getId()) + "\n");
 						saveTweet(status);
 					} else
 						System.out
@@ -196,6 +197,71 @@ public class Main {
 		twitterStream.filter(filter);
 	}
 
+	public JSONObject createJsonObj(Status status) throws JSONException {
+		JSONObject j = new JSONObject();
+
+		// important fields
+		j.put("TweetID", status.getId());
+		j.put("User", status.getUser().getScreenName());
+		j.put("TweetLanguage", status.getLang());
+		j.put("TweetGeoLoc", status.getGeoLocation());
+		j.put("TweetCreationDate", status.getCreatedAt());
+		j.put("Body", status.getText());
+
+		// optional fields
+		j.put("UserFriends", status.getUser().getFriendsCount());
+		j.put("UserFollowers", status.getUser().getFollowersCount());
+		j.put("UserLocation", status.getUser().getLocation());
+		j.put("UserLanguage", status.getUser().getLang());
+		j.put("UserTimeZone", status.getUser().getTimeZone());
+		j.put("UserDesc", status.getUser().getDescription());
+		j.put("UserStatus", status.getUser().getStatus());
+		j.put("UserStatusCount", status.getUser().getStatusesCount());
+
+		j.put("Retweets", status.getRetweetCount());
+		j.put("Favorites", status.getFavoriteCount());
+		// j.put("TweetPlace", status.getPlace());
+
+		return j;
+	}
+
+	public void saveTweet(Status status) throws IOException {
+
+		for (; tweetFile.length() >= fileSizes;) {
+			System.out.println(tweetFile.getName() + " has reached "
+					+ getSize(tweetFile.length()) + " creating new file...");
+			++fileNumber;
+			fileName = "tweets" + fileNumber + ".json";
+			tweetFile = new File(outputdir + "/" + fileName);
+			tweetWriter.close();
+			tweetWriter = new FileWriter(outputdir + "/" + fileName, true);
+		}
+		try {
+			JSONObject tweet = createJsonObj(status);
+			tweetWriter.write(tweet.toString() + "\n");
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			// file.flush();
+			++tweetsObtained;
+			System.out.println("Saved Tweet #" + tweetsObtained
+					+ " containing location information in " + fileName);
+		}
+	}
+
+	public String getSize(long n) {
+		int kb = (int) (n / 1000);
+		int mb = kb / 1000;
+		int gb = mb / 1000;
+		if (gb != 0)
+			return gb + "gbs";
+		else if (mb != 0)
+			return mb + "mbs";
+		else
+			return kb + "kbs";
+	}
+
 	public void printInformation(Status status) {
 		char[] charArray = new char[20];
 		Arrays.fill(charArray, '-');
@@ -227,71 +293,5 @@ public class Main {
 			System.out.println("#" + h.getText());
 		}
 		System.out.println("\nBody:\n" + status.getText());
-	}
-
-	public JSONObject createJsonObj(Status status) throws JSONException {
-		JSONObject j = new JSONObject();
-
-		// important fields
-		j.put("TweetID", status.getId());
-		j.put("User", status.getUser().getScreenName());
-		j.put("TweetLanguage", status.getLang());
-		j.put("TweetGeoLoc", status.getGeoLocation());
-		j.put("TweetCreationDate", status.getCreatedAt());
-		j.put("Body", status.getText());
-
-		// optional fields
-		j.put("UserFriends", status.getUser().getFriendsCount());
-		j.put("UserFollowers", status.getUser().getFollowersCount());
-		j.put("UserLocation", status.getUser().getLocation());
-		j.put("UserLanguage", status.getUser().getLang());
-		j.put("UserTimeZone", status.getUser().getTimeZone());
-		j.put("UserDesc", status.getUser().getDescription());
-		j.put("UserStatus", status.getUser().getStatus());
-		j.put("UserStatusCount", status.getUser().getStatusesCount());
-
-		j.put("Retweets", status.getRetweetCount());
-		j.put("Favorites", status.getFavoriteCount());
-		// j.put("TweetPlace", status.getPlace());
-
-		return j;
-	}
-
-	public void saveTweet(Status status) throws IOException {
-
-		File f = f = new File(outputdir + "/" + fileName);
-		for (; f.length() >= fileSizes;) {
-			System.out.println(f.getName() + " has reached "
-					+ getSize(f.length()) + " creating new file...");
-			++fileNumber;
-			fileName = "tweets" + fileNumber + ".json";
-			f = new File(outputdir + "/" + fileName);
-		}
-		FileWriter file = new FileWriter(outputdir + "/" + fileName, true);
-		try {
-			JSONObject tweet = createJsonObj(status);
-			file.write(tweet.toString() + "\n");
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			// file.flush();
-			file.close();
-			++tweetsObtained;
-			System.out.println("Saved Tweet #" + tweetsObtained
-					+ " containing location information in " + fileName);
-		}
-	}
-
-	public String getSize(long n) {
-		int kb = (int) (n / 1000);
-		int mb = kb / 1000;
-		int gb = mb / 1000;
-		if (gb != 0)
-			return gb + "gbs";
-		else if (mb != 0)
-			return mb + "mbs";
-		else
-			return kb + "kbs";
 	}
 }
