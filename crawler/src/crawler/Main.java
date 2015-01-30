@@ -1,5 +1,6 @@
 package crawler;
 
+import twitter4j.FilterQuery;
 import twitter4j.HashtagEntity;
 import twitter4j.JSONException;
 import twitter4j.JSONObject;
@@ -13,6 +14,7 @@ import twitter4j.UserMentionEntity;
 import twitter4j.auth.AccessToken;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
@@ -22,46 +24,82 @@ import java.util.jar.Attributes.Name;
 
 public class Main {
 
-	String outputdir;
 	int fileNumber = 0;
+	int convertToMB = 1000000;
+	long fileSizes;
+
+	String outputdir;
+	String fileName = "tweets" + fileNumber + ".json";
+
 	long tweetsObtained = 0;
 	long maxTweets;
-	long maxFileSize;
-	String fileName = "tweets" + fileNumber + ".json";
-	String languages;
 
 	public static void main(String[] args) {
 		Main m = new Main();
 		m.crawlTweets(args);
 	}
 
-	public void crawlTweets(String[] args) {
-		// TODO:Parameters to consider for tweets
-		// number of tweets
-		// size of tweet files
-		// outputdir
-		// languages
+	// Languages:
+	// fr = French
+	// en = English
+	// ar = Arabic
+	// ja = Japanese
+	// es = Spanish
+	// de = German
+	// it = Italian
+	// id = Indonesian
+	// pt = Portuguese
+	// ko = Korean
+	// tr = Turkis
+	// ru = Russian
+	// nl = Dutch
+	// fil = Filipino
+	// msa = Malay
+	// zh-tw = Traditional Chinese
+	// zh-cn = Simplified Chinese
+	// hi = Hindi
+	// no = Norwegian
+	// sv = Swedish
+	// fi = Finnish
+	// da = Danish
+	// pl = Polish
+	// hu = Hungarian
+	// fa = Farsi
+	// he = Hebrew
+	// ur = Urdu
+	// th = Thai
+	// en-gb = English UK
 
-		if (args.length < 4) {
+	public void crawlTweets(String[] args) {
+
+		if (args.length < 3) {
 			System.out.println("Invalid number of arguments");
+			System.out
+					.println("./runCrawlerExecutable.sh <Max Tweets> <File Sizes (MB)> <Output Directory>");
 			return;
 		}
 		maxTweets = Integer.valueOf(args[0]);
-		maxFileSize = Long.valueOf(args[1]);
+		fileSizes = Integer.valueOf(args[1]);
+		if(fileSizes == 0){
+			System.out.println("WHOA! You passed in 0 for file size. We are going to make it 1mb");
+			fileSizes = 1;
+		}
+		fileSizes *= convertToMB;
 		outputdir = args[2];
-		languages = args[3];
-		System.out.println("Tweets: " + maxTweets + "\nSize of files: "
-				+ maxFileSize + "\nOutputDir: " + outputdir + "\nLanguages: "
-				+ languages);
-
-		// TODO:Parameters to consider for crawling
-		// pages
-		// hops away
+		System.out.println("Tweets: " + maxTweets + "\nfile Sizes: "
+				+ fileSizes + "\nOutputDir: " + outputdir);
 
 		String accToken = "2995123279-tPsou5RS11xE1I682qUtKiIYCRx4FeKCG4rXiGb";
 		String accTokensec = "pQfusO6QK6D8TwkN1MYorMjJWl2brx6fSj6CSfynK0Asw";
 		String consumer = "GQMH51Jbw075KnlYrcgSqPjhb";
 		String consumersec = "DCKu6VdwUgokz8drPmWqR6mFTBeDc6yyd7eoDMU23u0kUcYxm9";
+
+		String[] languages = { "en" };
+		double[][] locations = { { -180.0d, -90.0d }, { 180.0d, 90.0d } };
+
+		FilterQuery filter = new FilterQuery();
+		filter.language(languages);
+		filter.locations(locations);
 
 		TwitterStream twitterStream = new TwitterStreamFactory().getInstance();
 		AccessToken ac = new AccessToken(accToken, accTokensec);
@@ -72,19 +110,22 @@ public class Main {
 			public void onStatus(Status status) {
 
 				try {
+					if (tweetsObtained >= maxTweets) {
+						System.out.println("Obtained " + tweetsObtained
+								+ " tweets exiting...");
+						System.exit(0);
+					}
 					if (status.getGeoLocation() != null) {
-						System.out
-								.println("Going to save tweet with the following information....");
-						printInformation(status);
+						// System.out
+						// .println("Going to save tweet with the following information....");
+						// printInformation(status);
 						saveTweet(status);
 					} else
 						System.out
 								.println("NO LOCATION INFORMATION!! Didn't save tweet...");
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				// printInformation(status);
 			}
 
 			@Override
@@ -117,7 +158,7 @@ public class Main {
 			}
 		};
 		twitterStream.addListener(listener);
-		twitterStream.sample();
+		twitterStream.filter(filter);
 	}
 
 	public void printInformation(Status status) {
@@ -153,8 +194,7 @@ public class Main {
 		System.out.println("\nBody:\n" + status.getText());
 	}
 
-	public JSONObject createJsonObj(Status status) throws JSONException,
-			IOException {
+	public JSONObject createJsonObj(Status status) throws JSONException {
 		JSONObject j = new JSONObject();
 
 		// important fields
@@ -179,21 +219,20 @@ public class Main {
 		j.put("Favorites", status.getFavoriteCount());
 		// j.put("TweetPlace", status.getPlace());
 
-		FileWriter l = new FileWriter(outputdir + "/languagesTest.txt", true);
-		l.write(status.getLang() + "\n");
-		l.close();
-
-		System.out.println("Created Json Object");
 		return j;
 	}
 
 	public void saveTweet(Status status) throws IOException {
-		if (tweetsObtained >= maxTweets) {
-			System.out.println("Obtained " + tweetsObtained
-					+ " tweets exiting...");
-			System.exit(0);
-		}
+
 		++tweetsObtained;
+		File f = f = new File(outputdir + "/" + fileName);
+		for (; f.length() >= fileSizes;) {
+			System.out.println(f.getName() + " has reached "
+					+ getSize(f.length()) + " creating new file...");
+			++fileNumber;
+			fileName = "tweets" + fileNumber + ".json";
+			f = new File(outputdir + "/" + fileName);
+		}
 		FileWriter file = new FileWriter(outputdir + "/" + fileName, true);
 		try {
 			JSONObject tweet = createJsonObj(status);
@@ -204,7 +243,19 @@ public class Main {
 		} finally {
 			// file.flush();
 			file.close();
+			System.out.println("Saved Tweet containing location information");
 		}
+	}
 
+	public String getSize(long n) {
+		int kb = (int) (n / 1000);
+		int mb = kb / 1000;
+		int gb = mb / 1000;
+		if (gb != 0)
+			return gb + "gbs";
+		else if (mb != 0)
+			return mb + "mbs";
+		else
+			return kb + "kbs";
 	}
 }
