@@ -13,13 +13,18 @@ import twitter4j.TwitterStreamFactory;
 import twitter4j.UserMentionEntity;
 import twitter4j.auth.AccessToken;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.jar.Attributes.Name;
 
 public class Main {
@@ -30,6 +35,7 @@ public class Main {
 
 	String outputdir;
 	String fileName = "tweets" + fileNumber + ".json";
+	String hashName = "hashedTweets.txt";
 
 	long tweetsObtained = 0;
 	long maxTweets;
@@ -72,6 +78,8 @@ public class Main {
 
 	public void crawlTweets(String[] args) {
 
+		final HashMap<Long, Integer> m = new HashMap<Long, Integer>();
+
 		if (args.length < 3) {
 			System.out.println("Invalid number of arguments");
 			System.out
@@ -87,8 +95,23 @@ public class Main {
 		}
 		fileSizes *= convertToMB;
 		outputdir = args[2];
-		System.out.println("Tweets: " + maxTweets + "\nfile Sizes: "
-				+ fileSizes + "\nOutputDir: " + outputdir);
+		File f = new File(outputdir + "/" + hashName);
+		if (f.isFile()) {
+			System.out.println(hashName
+					+ " was found, Importing already searched Tweets");
+			Charset chs = Charset.forName("US-ASCII");
+			try (BufferedReader r = Files.newBufferedReader(f.toPath(), chs)) {
+				String line = null;
+				while ((line = r.readLine()) != null) {
+					m.put(Long.valueOf(line), 1);
+				}
+			} catch (IOException x) {
+				System.err.println(x.getLocalizedMessage());
+			}
+			// m.put(key, value);
+		}
+//		System.out.println("Tweets: " + maxTweets + "\nfile Sizes: "
+//				+ fileSizes + "\nOutputDir: " + outputdir);
 
 		String accToken = "2995123279-tPsou5RS11xE1I682qUtKiIYCRx4FeKCG4rXiGb";
 		String accTokensec = "pQfusO6QK6D8TwkN1MYorMjJWl2brx6fSj6CSfynK0Asw";
@@ -114,9 +137,20 @@ public class Main {
 					if (tweetsObtained >= maxTweets) {
 						System.out.println("Obtained " + tweetsObtained
 								+ " tweets exiting...");
+						// for(Map.Entry<Long, Integer> entry : m.entrySet()){
+						// Long k = entry.getKey();
+						// FileWriter file = new FileWriter(outputdir +
+						// "/"+hashName, true);
+						// file.write(String.valueOf(k) + "\n");
+						// }
 						System.exit(0);
-					}
-					if (status.getGeoLocation() != null) {
+					} else if (!m.containsKey(status.getId())
+							&& status.getGeoLocation() != null) {
+						m.put(status.getId(), 1);
+						FileWriter file = new FileWriter(outputdir + "/"
+								+ hashName, true);
+						file.write(String.valueOf(status.getId()) + "\n");
+						file.close();
 						// System.out
 						// .println("Going to save tweet with the following information....");
 						// printInformation(status);
