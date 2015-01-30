@@ -80,8 +80,9 @@ public class Main {
 		}
 		maxTweets = Integer.valueOf(args[0]);
 		fileSizes = Integer.valueOf(args[1]);
-		if(fileSizes == 0){
-			System.out.println("WHOA! You passed in 0 for file size. We are going to make it 1mb");
+		if (fileSizes == 0) {
+			System.out
+					.println("WHOA! You passed in 0 for file size. We are going to make it 1mb");
 			fileSizes = 1;
 		}
 		fileSizes *= convertToMB;
@@ -224,7 +225,6 @@ public class Main {
 
 	public void saveTweet(Status status) throws IOException {
 
-		++tweetsObtained;
 		File f = f = new File(outputdir + "/" + fileName);
 		for (; f.length() >= fileSizes;) {
 			System.out.println(f.getName() + " has reached "
@@ -243,7 +243,9 @@ public class Main {
 		} finally {
 			// file.flush();
 			file.close();
-			System.out.println("Saved Tweet containing location information");
+			++tweetsObtained;
+			System.out.println("Saved Tweet #" + tweetsObtained
+					+ " containing location information in " + fileName);
 		}
 	}
 
