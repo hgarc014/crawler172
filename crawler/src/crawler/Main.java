@@ -44,6 +44,8 @@ public class Main {
 	long tweetsObtained = 0;
 	long maxTweets;
 
+	long time;
+
 	public static void main(String[] args) {
 		Main m = new Main();
 		try {
@@ -114,8 +116,10 @@ public class Main {
 
 				try {
 					if (tweetsObtained >= maxTweets) {
+						time = System.currentTimeMillis() - time;
+						time /= 1000;
 						System.out.println("Obtained " + tweetsObtained
-								+ " tweets exiting...");
+								+ " tweets in " + getTimeAgo(time));
 						hashWriter.close();
 						tweetWriter.close();
 						System.exit(0);
@@ -162,6 +166,7 @@ public class Main {
 			}
 		};
 		twitterStream.addListener(listener);
+		time = System.currentTimeMillis();
 		twitterStream.filter(filter);
 	}
 
@@ -261,5 +266,16 @@ public class Main {
 			System.out.println("#" + h.getText());
 		}
 		System.out.println("\nBody:\n" + status.getText());
+	}
+
+	public String getTimeAgo(long t) {
+		if (t / 60 == 0)
+			return t + " seconds";
+		else if (t / 3600 == 0)
+			return t / 60 + " minutes";
+		else if (t / 86400 == 0)
+			return t / 3600 + " hours";
+		else
+			return t / 86400 + " days";
 	}
 }
