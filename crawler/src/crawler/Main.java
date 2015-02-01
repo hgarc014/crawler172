@@ -25,11 +25,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.jar.Attributes.Name;
 
 public class Main extends Thread {
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException,
+			InterruptedException {
 
 		int fileNumber = 0;
 		int convertToMB = 1000000;
@@ -44,12 +46,9 @@ public class Main extends Thread {
 		FileWriter tweetWriter = null;
 		File tweetFile = null;
 
-		long tweetsObtained = 0;
-		long maxTweets;
+		long maxTweets = 0;
 
-		long time;
-
-		FilterQuery filter = new FilterQuery();
+		// FilterQuery filter = new FilterQuery();
 
 		final HashMap<Long, Integer> hash = new HashMap<Long, Integer>();
 
@@ -70,7 +69,7 @@ public class Main extends Thread {
 		fileSizes *= convertToMB;
 		threads = Integer.valueOf(args[2]);
 		outputdir = args[3];
-		
+
 		if (threads <= 0) {
 			System.out
 					.println("WHOA! You passed an invalid value for threads. We are going to make it 1");
@@ -92,28 +91,17 @@ public class Main extends Thread {
 		tweetWriter = new FileWriter(outputdir + "/" + fileName, true);
 		tweetFile = new File(outputdir + "/" + fileName);
 
-		String[] languages = { "en" };
-		double[][] locations = { { -180.0d, -90.0d }, { 180.0d, 90.0d } };
-
-		filter.language(languages);
-		filter.locations(locations);
-
 		CrawlerInformation info = new CrawlerInformation(fileSizes, maxTweets,
 				outputdir);
-		info.setFilter(filter);
 		info.setHash(hash);
 		info.setTweetWriter(tweetWriter);
 		info.setHashWriter(hashWriter);
 		info.setTweetFile(tweetFile);
 
-		for (int i = 0; i < threads; ++i) {
-			Crawler c = new Crawler(info, "Thread-" + i);
-			c.start();
-		}
+		// for (int i = 0; i < threads; ++i) {
+		Crawler c = new Crawler(info, "Thread-" + 0);
+		c.start();
+		// }
 
-		// Crawler c = new Crawler(info,"Thread-1");
-		// c.start();
-		// Crawler c2 = new Crawler(info,"Thread-2");
-		// c2.start();
 	}
 }

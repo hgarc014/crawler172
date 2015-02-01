@@ -91,6 +91,15 @@ public class Crawler extends Thread {
 		twitterStream.setOAuthConsumer(info.getConsumer(),
 				info.getConsumersec());
 		twitterStream.setOAuthAccessToken(ac);
+		
+		FilterQuery filter = new FilterQuery();
+		
+		String[] languages = { "en" };
+		double[][] locations = { { -180.0d, -90.0d }, { 180.0d, 90.0d } };
+
+		filter.language(languages);
+		filter.locations(locations);
+		
 		StatusListener listener = new StatusListener() {
 			@Override
 			public void onStatus(Status status) {
@@ -156,7 +165,7 @@ public class Crawler extends Thread {
 		};
 		twitterStream.addListener(listener);
 		time = System.currentTimeMillis();
-		twitterStream.filter(info.getFilter());
+		twitterStream.filter(filter);
 	}
 
 	public String getSize(long n) {
