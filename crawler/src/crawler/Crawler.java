@@ -22,76 +22,15 @@ import twitter4j.TwitterStreamFactory;
 import twitter4j.UserMentionEntity;
 import twitter4j.auth.AccessToken;
 
-public class Crawler {
-	int fileNumber = 0;
-	int convertToMB = 1000000;
-	long fileSizes;
-
-	String outputdir;
-	String fileName = "tweets" + fileNumber + ".json";
-	String hashName = "hashedTweets.txt";
-
-	FileWriter hashWriter = null;
-	FileWriter tweetWriter = null;
-	File tweetFile = null;
-
-	long tweetsObtained = 0;
-	long maxTweets;
-
+public class Crawler extends Thread {
+	CrawlerInformation info = null;
 	long time;
+	String threadName = null;
+	private Thread t;
 
-	String accToken = "2995123279-tPsou5RS11xE1I682qUtKiIYCRx4FeKCG4rXiGb";
-	String accTokensec = "pQfusO6QK6D8TwkN1MYorMjJWl2brx6fSj6CSfynK0Asw";
-	String consumer = "GQMH51Jbw075KnlYrcgSqPjhb";
-	String consumersec = "DCKu6VdwUgokz8drPmWqR6mFTBeDc6yyd7eoDMU23u0kUcYxm9";
-
-	FilterQuery filter = new FilterQuery();
-
-	final HashMap<Long, Integer> hash = new HashMap<Long, Integer>();
-
-	Crawler(String[] args) throws IOException {
-
-		if (args.length < 3) {
-			System.out.println("Invalid number of arguments");
-			System.out
-					.println("./runCrawlerExecutable.sh <Max Tweets> <File Sizes (MB)> <Output Directory>");
-			return;
-		}
-		maxTweets = Integer.valueOf(args[0]);
-		fileSizes = Integer.valueOf(args[1]);
-		if (fileSizes == 0) {
-			System.out
-					.println("WHOA! You passed in 0 for file size. We are going to make it 1mb");
-			fileSizes = 1;
-		}
-		fileSizes *= convertToMB;
-		outputdir = args[2];
-		File fillHash = new File(outputdir + "/" + hashName);
-		if (fillHash.isFile()) {
-			System.out.println(hashName
-					+ " was found, Importing already searched Tweets");
-			Charset chs = Charset.forName("US-ASCII");
-			try (BufferedReader r = Files.newBufferedReader(fillHash.toPath(),
-					chs)) {
-				String line = null;
-				while ((line = r.readLine()) != null) {
-					hash.put(Long.valueOf(line), 1);
-				}
-			} catch (IOException x) {
-				System.err.println(x.getLocalizedMessage());
-			}
-		}
-
-		hashWriter = new FileWriter(outputdir + "/" + hashName, true);
-		tweetWriter = new FileWriter(outputdir + "/" + fileName, true);
-		tweetFile = new File(outputdir + "/" + fileName);
-
-		String[] languages = { "en" };
-		double[][] locations = { { -180.0d, -90.0d }, { 180.0d, 90.0d } };
-
-		filter.language(languages);
-		filter.locations(locations);
-
+	Crawler(CrawlerInformation info, String threadName) throws IOException {
+		this.info = info;
+		this.threadName = threadName;
 	}
 
 	public JSONObject createJsonObj(Status status) throws JSONException {
@@ -124,59 +63,63 @@ public class Crawler {
 
 	public void saveTweet(Status status) throws IOException {
 
-		for (; tweetFile.length() >= fileSizes;) {
-			System.out.println(tweetFile.getName() + " has reached "
-					+ getSize(tweetFile.length()) + " creating new file...");
-			++fileNumber;
-			fileName = "tweets" + fileNumber + ".json";
-			tweetFile = new File(outputdir + "/" + fileName);
-			tweetWriter.close();
-			tweetWriter = new FileWriter(outputdir + "/" + fileName, true);
+		for (; info.getTweetFile().length() >= info.getFileSizes();) {
+			System.out.println(threadName + ": "
+					+ info.getTweetFile().getName() + " has reached "
+					+ getSize(info.getTweetFile().length())
+					+ " creating new file...");
+			info.updateTweetFile();
 		}
 		try {
 			JSONObject tweet = createJsonObj(status);
-			tweetWriter.write(tweet.toString() + "\n");
+			info.getTweetWriter().write(tweet.toString() + "\n");
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
-			// file.flush();
-			++tweetsObtained;
-			System.out.println("Saved Tweet #" + tweetsObtained
-					+ " containing location information in " + fileName);
+			info.incrementTweetsObtained();
+			System.out.println(threadName + ": Saved Tweet #"
+					+ info.getTweetsObtained()
+					+ " containing location information in "
+					+ info.getFileName());
 		}
 	}
 
-	public void crawlTweets() {
+	public void run() {
 		TwitterStream twitterStream = new TwitterStreamFactory().getInstance();
-		AccessToken ac = new AccessToken(accToken, accTokensec);
-		twitterStream.setOAuthConsumer(consumer, consumersec);
+		AccessToken ac = new AccessToken(info.getAccToken(),
+				info.getAccTokensec());
+		twitterStream.setOAuthConsumer(info.getConsumer(),
+				info.getConsumersec());
 		twitterStream.setOAuthAccessToken(ac);
 		StatusListener listener = new StatusListener() {
 			@Override
 			public void onStatus(Status status) {
 
 				try {
-					if (tweetsObtained >= maxTweets) {
+					if (info.getTweetsObtained() >= info.getMaxTweets()) {
 						time = System.currentTimeMillis() - time;
 						time /= 1000;
-						System.out.println("Obtained " + tweetsObtained
-								+ " tweets in " + getTimeAgo(time));
-						hashWriter.close();
-						tweetWriter.close();
+						System.out.println(threadName + ": Obtained "
+								+ info.getTweetsObtained() + " tweets in "
+								+ getTimeAgo(time));
+						info.getHashWriter().close();
+						info.getTweetWriter().close();
 						System.exit(0);
-					} else if (!hash.containsKey(status.getId())) {
+						// twitterStream.shutdown();
+					} else if (!info.getHash().containsKey(status.getId())) {
 						if (status.getGeoLocation() != null) {
-							hash.put(status.getId(), 1);
-							hashWriter.write(String.valueOf(status.getId())
-									+ "\n");
+							info.getHash().put(status.getId(), 1);
+							info.getHashWriter().write(
+									String.valueOf(status.getId()) + "\n");
 							saveTweet(status);
 						} else
 							System.out
-									.println("No Location Information!! Did not save tweet...");
+									.println(threadName
+											+ ": No Location Information!! Did not save tweet...");
 					} else
 						System.out
-								.println("Tweet has already been crawled, moving to next tweet...");
+								.println(threadName
+										+ ": Tweet has already been crawled, moving to next tweet...");
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -213,7 +156,7 @@ public class Crawler {
 		};
 		twitterStream.addListener(listener);
 		time = System.currentTimeMillis();
-		twitterStream.filter(filter);
+		twitterStream.filter(info.getFilter());
 	}
 
 	public String getSize(long n) {
@@ -270,5 +213,13 @@ public class Crawler {
 			return t / 3600 + " hours";
 		else
 			return t / 86400 + " days";
+	}
+
+	public void start() {
+		System.out.println("Starting " + threadName);
+		if (t == null) {
+			t = new Thread(this, threadName);
+			t.start();
+		}
 	}
 }
