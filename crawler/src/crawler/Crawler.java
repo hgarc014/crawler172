@@ -36,27 +36,27 @@ public class Crawler extends Thread {
 	public JSONObject createJsonObj(Status status) throws JSONException {
 		JSONObject j = new JSONObject();
 
-		// important fields
-		j.put("TweetID", status.getId());
-		j.put("User", status.getUser().getScreenName());
-		j.put("TweetLanguage", status.getLang());
-		j.put("TweetGeoLoc", status.getGeoLocation());
-		j.put("TweetCreationDate", status.getCreatedAt());
-		j.put("Body", status.getText());
-
-		// optional fields
-		j.put("UserFriends", status.getUser().getFriendsCount());
-		j.put("UserFollowers", status.getUser().getFollowersCount());
-		j.put("UserLocation", status.getUser().getLocation());
-		j.put("UserLanguage", status.getUser().getLang());
-		j.put("UserTimeZone", status.getUser().getTimeZone());
-		j.put("UserDesc", status.getUser().getDescription());
-		j.put("UserStatus", status.getUser().getStatus());
-		j.put("UserStatusCount", status.getUser().getStatusesCount());
-
-		j.put("Retweets", status.getRetweetCount());
-		j.put("Favorites", status.getFavoriteCount());
-		// j.put("TweetPlace", status.getPlace());
+		j.put("contributors", status.getContributors());
+		j.put("created_at", status.getCreatedAt());
+		j.put("current_user_retweet_id", status.getCurrentUserRetweetId());
+		j.put("favorite_count", status.getFavoriteCount());
+		j.put("is_favorited", status.isFavorited());
+		j.put("geo_location", status.getGeoLocation());
+		j.put("id", status.getId());
+		j.put("in_reply_to_screen_name", status.getInReplyToScreenName());
+		j.put("in_reply_to_status_id", status.getInReplyToStatusId());
+		j.put("in_reply_to_user_id", status.getInReplyToUserId());
+		j.put("language", status.getLang());
+		j.put("palce", status.getPlace());
+		j.put("is_possibly_sensitive", status.isPossiblySensitive());
+		j.put("retweet_count", status.getRetweetCount());
+		j.put("is_retweeted", status.isRetweeted());
+		j.put("retweeted_status", status.getRetweetedStatus());
+//		j.put("source", status.getSource());
+		j.put("text", status.getText());
+		j.put("is_truncated", status.isTruncated());
+		j.put("user", status.getUser());
+		
 
 		return j;
 	}
@@ -85,7 +85,7 @@ public class Crawler extends Thread {
 	}
 
 	public void run() {
-		TwitterStream twitterStream = new TwitterStreamFactory().getInstance();
+		final TwitterStream twitterStream = new TwitterStreamFactory().getInstance();
 		AccessToken ac = new AccessToken(info.getAccToken(),
 				info.getAccTokensec());
 		twitterStream.setOAuthConsumer(info.getConsumer(),
@@ -113,8 +113,9 @@ public class Crawler extends Thread {
 								+ getTimeAgo(time));
 						info.getHashWriter().close();
 						info.getTweetWriter().close();
-						System.exit(0);
-						// twitterStream.shutdown();
+//						System.exit(0);
+						 twitterStream.shutdown();
+						 twitterStream.cleanUp();
 					} else if (!info.getHash().containsKey(status.getId())) {
 						if (status.getGeoLocation() != null) {
 							info.getHash().put(status.getId(), 1);
