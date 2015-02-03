@@ -101,12 +101,14 @@ public class CrawlerInformation {
 		this.filter = filter;
 	}
 
+	// used for updating the saving tweet file when the file is larger than the
+	// given size
 	public void updateTweetFile() throws IOException {
 		++fileNumber;
 		fileName = "tweets" + fileNumber + ".json";
 		tweetFile = new File(outputdir + "/" + fileName);
 		tweetWriter.close();
-		tweetWriter = new FileWriter(outputdir + "/" + fileName,true);
+		tweetWriter = new FileWriter(outputdir + "/" + fileName, true);
 	}
 
 	private int fileNumber = 0;

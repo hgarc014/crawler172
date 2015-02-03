@@ -48,31 +48,31 @@ public class Main extends Thread {
 
 		long maxTweets = 0;
 
-		// FilterQuery filter = new FilterQuery();
-
 		final HashMap<Long, Integer> hash = new HashMap<Long, Integer>();
 
 		if (args.length < 4) {
 			System.out.println("Invalid number of arguments");
 			System.out.println("length: " + args.length);
 			System.out
-					.println("./runCrawlerExecutable.sh <Max Tweets> <File Sizes (MB)> <Threads> <Output Directory>");
+					.println("<Max Tweets> <File Sizes (MB)> <Threads> <Output Directory>");
 			return;
 		}
-		maxTweets = Integer.valueOf(args[0]);
-		fileSizes = Integer.valueOf(args[1]);
-		if (fileSizes == 0) {
-			System.out
-					.println("WHOA! You passed in 0 for file size. We are going to make it 1mb");
+
+		maxTweets = checkNumber(args[0], "Max Tweets");
+		fileSizes = checkNumber(args[1], "File Sizes(MB)");
+		threads = checkNumber(args[2], "Threads");
+		outputdir = args[3];
+
+		if (fileSizes <= 0) {
+			System.out.println("WHOA! You passed in " + fileSizes
+					+ " for file size. We are going to make it 1mb");
 			fileSizes = 1;
 		}
 		fileSizes *= convertToMB;
-		threads = Integer.valueOf(args[2]);
-		outputdir = args[3];
 
 		if (threads <= 0) {
-			System.out
-					.println("WHOA! You passed an invalid value for threads. We are going to make it 1");
+			System.out.println("WHOA! You passed in " + threads
+					+ " for threads. We are going to make it 1");
 			threads = 1;
 		}
 		File fillHash = new File(outputdir + "/" + hashName);
@@ -99,9 +99,33 @@ public class Main extends Thread {
 		info.setTweetFile(tweetFile);
 
 		// for (int i = 0; i < threads; ++i) {
-		Crawler c = new Crawler(info, "Thread-" + 0);
-		c.start();
+		// Crawler c = new Crawler(info, "Thread-" + i);
+		// c.start();
 		// }
 
+		Crawler c = new Crawler(info, "TweetCrawler");
+		c.start();
+	}
+
+	public static Integer checkNumber(String convert, String name) {
+		try {
+			int x = Integer.valueOf(convert);
+			if (x == 0) {
+				System.out.println("WHOA! You passed " + x + " for " + name
+						+ ". We will convert it to 1");
+				x = 1;
+			} else if (x < 0) {
+				int y = -1 * x;
+				System.out.println("WHOA! You passed " + x + " for " + name
+						+ ". We will convert it to " + y);
+				x = y;
+			}
+			return x;
+		} catch (NumberFormatException n) {
+			System.out.println(convert + " is not a valid integer value for "
+					+ name + "!");
+			System.exit(0);
+			return 0;
+		}
 	}
 }
