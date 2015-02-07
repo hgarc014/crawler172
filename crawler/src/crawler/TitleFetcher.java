@@ -26,8 +26,8 @@ public class TitleFetcher {
 	private static int crawlTimeoutMs = 0;
 	private static boolean verbose = false;
 	
-	TitleFetcher() {
-		TitleFetcher.directoryPath = "/Users/nicklawler222/tweets/";
+	TitleFetcher(String inputdir) {
+		TitleFetcher.directoryPath = inputdir;
 		TitleFetcher.crawlTimeoutMs = 5000;
 		TitleFetcher.numThreads = 1;
 		TitleFetcher.verbose = false;
@@ -41,10 +41,10 @@ public class TitleFetcher {
 	}
 	
 	public static void main(String[] args) throws IOException{
-		directoryPath = "/Users/nicklawler222/tweets/";
-		crawlTimeoutMs = 5000;
-		numThreads = 1;
-		verbose = true;
+		directoryPath = args[0];
+		crawlTimeoutMs = Integer.parseInt(args[1]);
+		numThreads = Integer.parseInt(args[2]);
+		verbose = Boolean.parseBoolean(args[3]);
 		TitleFetcher.fetchTitles();
 	}
 	
@@ -61,7 +61,9 @@ public class TitleFetcher {
 			
 			// TODO replace guard with regular expression match
 			if (file.getName().equals("hashedTweets.txt") || file.getName().equals(".DS_Store")) {
-				System.out.println("Skipping " + file.getName());
+				if (verbose) {
+					System.out.println("Skipping " + file.getName());
+				}
 				continue; // figured out how to use continue after 2.5 years of programming
 			}
 			
