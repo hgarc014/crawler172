@@ -22,9 +22,9 @@ import org.jsoup.nodes.Document;
 
 public class TitleFetcher {
 	private static String directoryPath = null;
-	private static int numThreads = (Integer) null;
-	private static int crawlTimeoutMs = (Integer) null;
-	private static boolean verbose = (Boolean) null;
+	private static int numThreads = 0;
+	private static int crawlTimeoutMs = 0;
+	private static boolean verbose = false;
 	
 	TitleFetcher() {
 		TitleFetcher.directoryPath = "/Users/nicklawler222/tweets/";
@@ -40,13 +40,14 @@ public class TitleFetcher {
 		TitleFetcher.verbose = verbose;
 	}
 	
-	public void main(String[] args) throws IOException {
-		this.fetchTitles();
-	}
 	
-	public static void fetchTitles() throws IOException {
+	public static void main(String[] args) throws IOException {
+		directoryPath = "/Users/nicklawler222/tweets/";
+		crawlTimeoutMs = 5000;
+		numThreads = 1;
+		verbose = true;
+		
 		long startTime = System.nanoTime();
-	
 		int crawlTimeoutMs = 5000;
 		File[] directory = new File(directoryPath).listFiles();	
 	
@@ -112,7 +113,7 @@ public class TitleFetcher {
 								String title = titleOrEmpty;
 								tweet.put("linkTitle", title);
 								if (verbose) {
-									System.out.println("Updated tweet "
+									System.out.println("Added title \"" + title + "\" from tweet "
 											+ Integer.toString(tweetCount));
 								}
 							} else {
