@@ -7,8 +7,19 @@ fi
 
 
 if [ -d "$4" ];then
+    START=$(date +%s)
     java -jar crawler.jar $1 $2 $3 $4
 else
     echo "seems you provided an invalid directory"
 fi
+END=$(date +%s.%N)
+dt=$(echo "$END - $START" | bc)
+dd=$(echo "$dt/86400" | bc)
+dt2=$(echo "$dt-86400*$dd" | bc)
+dh=$(echo "$dt2/3600" | bc)
+dt3=$(echo "$dt2-3600*$dh" | bc)
+dm=$(echo "$dt3/60" | bc)
+ds=$(echo "$dt3-60*$dm" | bc)
+
+printf "Total runtime: %d:%02d:%02d:%02.4f\n" $dd $dh $dm $ds
 
