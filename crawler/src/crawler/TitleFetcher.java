@@ -35,18 +35,20 @@ public class TitleFetcher {
 	
 	TitleFetcher(String directoryPath, int crawlTimeoutMs, int numThreads, boolean verbose) {
 		TitleFetcher.directoryPath = directoryPath;
-		this.numThreads = numThreads;
+		TitleFetcher.numThreads = numThreads;
 		TitleFetcher.crawlTimeoutMs = crawlTimeoutMs;
 		TitleFetcher.verbose = verbose;
 	}
 	
-	
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException{
 		directoryPath = "/Users/nicklawler222/tweets/";
 		crawlTimeoutMs = 5000;
 		numThreads = 1;
 		verbose = true;
-		
+		TitleFetcher.fetchTitles();
+	}
+	
+	public static void fetchTitles() throws IOException {		
 		long startTime = System.nanoTime();
 		int crawlTimeoutMs = 5000;
 		File[] directory = new File(directoryPath).listFiles();	
