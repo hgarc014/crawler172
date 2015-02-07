@@ -85,6 +85,7 @@ public class Main extends Thread {
 
 		Crawler c = new Crawler(info, "TweetCrawler");
 		c.start();
+		c.join();
 	}
 
 	public static Integer checkNumber(String convert, String name) {
