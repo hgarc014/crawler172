@@ -15,12 +15,12 @@ import twitter4j.TwitterStreamFactory;
 import twitter4j.UserMentionEntity;
 import twitter4j.auth.AccessToken;
 
-public class Crawler{
+public class Crawler extends Thread {
 	CrawlerInformation info = null;
 	long time;
 	String threadName = null;
 	private Thread t;
-	 Boolean notfinished=true;
+	Boolean notfinished = true;
 
 	Crawler(CrawlerInformation info, String threadName) throws IOException {
 		this.info = info;
@@ -84,12 +84,11 @@ public class Crawler{
 			e.printStackTrace();
 			info.closeTweetWriter();
 		} finally {
-			// increment tweets obtained
-			info.incrementTweetsObtained();
+			info.incrementTweetsSaved();
 			System.out.println(threadName + ": Saved Tweet #"
-					+ info.getTweetsObtained()
-					+ " containing location information in "
-					+ info.getFileName());
+					+ info.getTweetsSaved() + " in file "
+					+ info.getTweetFile().getName());
+			// increment tweets obtained
 		}
 	}
 
@@ -112,7 +111,7 @@ public class Crawler{
 
 		filter.language(languages);
 		filter.locations(locations);
-		
+
 		StatusListener listener = new StatusListener() {
 			@Override
 			public void onStatus(Status status) {
@@ -121,33 +120,58 @@ public class Crawler{
 					// if obtained tweets are larger or equal than max tweets
 					// exit system
 					if (info.getTweetsObtained() >= info.getMaxTweets()) {
-						if(notfinished){
-						time = System.currentTimeMillis() - time;
-						time /= 1000;
-						System.out.println(threadName + ": Obtained "
-								+ info.getTweetsObtained() + " tweets in "
-								+ getTimeAgo(time));
-						info.closeHashWriter();
-						info.closeTweetWriter();
-						notfinished=false;
+						if (info.getNotFinished()) {
+							while (!info.getTweetList().isEmpty()) {
+								saveTweet(info.getTweetList().remove());
+							}
+							while (!info.getHashList().isEmpty()) {
+								info.getHashWriter().write(
+										info.getHashList().remove() + "\n");
+							}
+							time = System.currentTimeMillis() - time;
+							time /= 1000;
+							System.out.println(threadName + ": Obtained "
+									+ info.getTweetsObtained() + " tweets in "
+									+ getTimeAgo(time));
+							info.closeHashWriter();
+							info.closeTweetWriter();
+							info.setNotFinished(false);
 						}
 						// System.exit(0);
-						
-						TitleFetcher.fetchTitles(info.getOutputdir(), info.getNumThreads());
-						
+
+						TitleFetcher.fetchTitles(info.getOutputdir(),
+								info.getNumThreads());
+
 						twitterStream.shutdown();
 						twitterStream.cleanUp();
+					} else if (!info.getTweetList().isEmpty()
+							&& (info.getTweetsObtained() % 100) == 0) {
+						while (!info.getTweetList().isEmpty()) {
+							saveTweet(info.getTweetList().remove());
+						}
+						System.out.println(threadName + ": Saving hash ids");
+						while (!info.getHashList().isEmpty()) {
+							info.getHashWriter().write(
+									info.getHashList().remove() + "\n");
+						}
 					}
 					// check if the tweet has been crawled
 					else if (!info.getHash().containsKey(status.getId())) {
 						// check if tweet contains location information then
 						// place tweet into hash and save to hashfile
 						// then save tweet
+						info.getHash().put(status.getId(), 1);
+						info.getHashList().add(status.getId());
 						if (status.getGeoLocation() != null) {
-							info.getHash().put(status.getId(), 1);
-							info.getHashWriter().write(
-									String.valueOf(status.getId()) + "\n");
-							saveTweet(status);
+
+							info.incrementTweetsObtained();
+							info.getTweetList().add(status);
+
+							System.out
+									.println(threadName
+											+ ": Added Tweet #"
+											+ info.getTweetsObtained()
+											+ " containing location information in to List to be saved!");
 						} else
 							System.out
 									.println(threadName
@@ -213,38 +237,38 @@ public class Crawler{
 
 	// used for printing information of the tweet,
 	// NOT used in crawling
-	public void printInformation(Status status) {
-		char[] charArray = new char[20];
-		Arrays.fill(charArray, '-');
-		String line = new String(charArray);
-		System.out.println(line + "\nUSER INFORMATION" + "\n@"
-				+ status.getUser().getScreenName() + "\nTimeZone: "
-				+ status.getUser().getTimeZone() + "\nUserLocation: "
-				+ status.getUser().getLocation() + "\nFriends: "
-				+ status.getUser().getFriendsCount() + "\nFollowers: "
-				+ status.getUser().getFollowersCount()
-				+ "\nProfileDescription: " + status.getUser().getDescription()
-				+ "\nStatus: " + status.getUser().getStatus()
-				+ "\nStatusCount: " + status.getUser().getStatusesCount()
-				+ "\nLanguage: " + status.getUser().getLang());
-
-		System.out.println("\nTWEET INFORMATION" + "\nTweetID: "
-				+ status.getId() + "Language: " + status.getLang()
-				+ "\nGeoLocation: " + status.getGeoLocation() + "\nRetweets: "
-				+ status.getRetweetCount() + "\nFavorites: "
-				+ status.getFavoriteCount() + "\nPlace: " + status.getPlace()
-				+ "\nCreatedAt: " + status.getCreatedAt());
-
-		System.out.println("\nMENTIONS:");
-		for (UserMentionEntity u : status.getUserMentionEntities()) {
-			System.out.println("@" + u.getScreenName());
-		}
-		System.out.println("\nPOUNDSIGNS:");
-		for (HashtagEntity h : status.getHashtagEntities()) {
-			System.out.println("#" + h.getText());
-		}
-		System.out.println("\nBody:\n" + status.getText());
-	}
+	// public void printInformation(Status status) {
+	// char[] charArray = new char[20];
+	// Arrays.fill(charArray, '-');
+	// String line = new String(charArray);
+	// System.out.println(line + "\nUSER INFORMATION" + "\n@"
+	// + status.getUser().getScreenName() + "\nTimeZone: "
+	// + status.getUser().getTimeZone() + "\nUserLocation: "
+	// + status.getUser().getLocation() + "\nFriends: "
+	// + status.getUser().getFriendsCount() + "\nFollowers: "
+	// + status.getUser().getFollowersCount()
+	// + "\nProfileDescription: " + status.getUser().getDescription()
+	// + "\nStatus: " + status.getUser().getStatus()
+	// + "\nStatusCount: " + status.getUser().getStatusesCount()
+	// + "\nLanguage: " + status.getUser().getLang());
+	//
+	// System.out.println("\nTWEET INFORMATION" + "\nTweetID: "
+	// + status.getId() + "Language: " + status.getLang()
+	// + "\nGeoLocation: " + status.getGeoLocation() + "\nRetweets: "
+	// + status.getRetweetCount() + "\nFavorites: "
+	// + status.getFavoriteCount() + "\nPlace: " + status.getPlace()
+	// + "\nCreatedAt: " + status.getCreatedAt());
+	//
+	// System.out.println("\nMENTIONS:");
+	// for (UserMentionEntity u : status.getUserMentionEntities()) {
+	// System.out.println("@" + u.getScreenName());
+	// }
+	// System.out.println("\nPOUNDSIGNS:");
+	// for (HashtagEntity h : status.getHashtagEntities()) {
+	// System.out.println("#" + h.getText());
+	// }
+	// System.out.println("\nBody:\n" + status.getText());
+	// }
 
 	// return time took to crawl as string
 	public String getTimeAgo(long t) {
@@ -258,11 +282,11 @@ public class Crawler{
 			return t / 86400 + " days";
 	}
 
-//	public void start() {
-//		System.out.println("Starting " + threadName);
-//		if (t == null) {
-//			t = new Thread(this, threadName);
-//			t.start();
-//		}
-//	}
+	public void start() {
+		System.out.println("Starting " + threadName);
+		if (t == null) {
+			t = new Thread(this, threadName);
+			t.start();
+		}
+	}
 }

@@ -4,8 +4,12 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+import org.json.simple.JSONObject;
 
 import twitter4j.FilterQuery;
+import twitter4j.Status;
 
 public class CrawlerInformation {
 
@@ -27,6 +31,14 @@ public class CrawlerInformation {
 
 	public void incrementTweetsObtained() {
 		++tweetsObtained;
+	}
+	
+	public long getTweetsSaved() {
+		return tweetsSaved;
+	}
+
+	public void incrementTweetsSaved() {
+		++tweetsSaved;
 	}
 
 	public long getMaxTweets() {
@@ -100,7 +112,7 @@ public class CrawlerInformation {
 	public void setFilter(FilterQuery filter) {
 		this.filter = filter;
 	}
-	
+
 	public int getNumThreads() {
 		return numThreads;
 	}
@@ -121,12 +133,22 @@ public class CrawlerInformation {
 		}
 
 	}
-
+	
+	public ConcurrentLinkedQueue<Status> getTweetList(){
+		return tweetsToSave;
+	}
+	public ConcurrentLinkedQueue<Long> getHashList(){
+		return hashsToSave;
+	}
+	
+	private ConcurrentLinkedQueue<Status> tweetsToSave = new ConcurrentLinkedQueue<Status>();
+	private ConcurrentLinkedQueue<Long> hashsToSave = new ConcurrentLinkedQueue<Long>();
 	private int fileNumber = 0;
 	private int numThreads = 1;
-	
+
 	private long fileSizes = 0;
 	private long tweetsObtained = 0;
+	private long tweetsSaved = 0;
 	private long maxTweets = 0;
 
 	private String outputdir = null;
@@ -145,6 +167,16 @@ public class CrawlerInformation {
 	private String consumer = "GQMH51Jbw075KnlYrcgSqPjhb";
 	private String consumersec = "DCKu6VdwUgokz8drPmWqR6mFTBeDc6yyd7eoDMU23u0kUcYxm9";
 
+	private Boolean notFinished = true;
+
+	public Boolean getNotFinished() {
+		return notFinished;
+	}
+	
+	public void setNotFinished(Boolean notFinished){
+		this.notFinished = notFinished;
+	}
+
 	public String getAccToken() {
 		return accToken;
 	}
@@ -161,7 +193,8 @@ public class CrawlerInformation {
 		return consumersec;
 	}
 
-	CrawlerInformation(long fileSizes, long maxTweets, String outputdir, int numThreads) {
+	CrawlerInformation(long fileSizes, long maxTweets, String outputdir,
+			int numThreads) {
 		this.fileSizes = fileSizes;
 		this.maxTweets = maxTweets;
 		this.outputdir = outputdir;

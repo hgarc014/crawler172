@@ -141,10 +141,9 @@ public class TitleFetcher {
 						}
 					}
 				jsonWriter.close();
-			} else {
-				if (verbose) {
-					System.out.println("Skipping " + file.getName());
-				}
+			} else if (verbose) {
+				System.out.println("Skipping " + file.getName());
+
 			}
 		}
 
