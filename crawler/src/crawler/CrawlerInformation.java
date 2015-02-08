@@ -100,6 +100,10 @@ public class CrawlerInformation {
 	public void setFilter(FilterQuery filter) {
 		this.filter = filter;
 	}
+	
+	public int getNumThreads() {
+		return numThreads;
+	}
 
 	// used for updating the saving tweet file when the file is larger than the
 	// given size
@@ -112,7 +116,8 @@ public class CrawlerInformation {
 	}
 
 	private int fileNumber = 0;
-
+	private int numThreads = 1;
+	
 	private long fileSizes = 0;
 	private long tweetsObtained = 0;
 	private long maxTweets = 0;
@@ -149,10 +154,11 @@ public class CrawlerInformation {
 		return consumersec;
 	}
 
-	CrawlerInformation(long fileSizes, long maxTweets, String outputdir) {
+	CrawlerInformation(long fileSizes, long maxTweets, String outputdir, int numThreads) {
 		this.fileSizes = fileSizes;
 		this.maxTweets = maxTweets;
 		this.outputdir = outputdir;
+		this.numThreads = numThreads;
 	}
 
 }

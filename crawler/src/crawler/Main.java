@@ -71,8 +71,7 @@ public class Main extends Thread {
 		tweetWriter = new FileWriter(outputdir + "/" + fileName, true);
 		tweetFile = new File(outputdir + "/" + fileName);
 
-		CrawlerInformation info = new CrawlerInformation(fileSizes, maxTweets,
-				outputdir);
+		CrawlerInformation info = new CrawlerInformation(fileSizes, maxTweets, outputdir, threads);
 		info.setHash(hash);
 		info.setTweetWriter(tweetWriter);
 		info.setHashWriter(hashWriter);

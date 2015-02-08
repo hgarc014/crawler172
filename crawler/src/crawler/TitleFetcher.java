@@ -21,46 +21,27 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 public class TitleFetcher {
-	private static String directoryPath = null;
-	private static int numThreads = 0;
-	private static int crawlTimeoutMs = 0;
-	private static boolean verbose = false;
-	
-	TitleFetcher(String inputdir) {
-		TitleFetcher.directoryPath = inputdir;
-		TitleFetcher.crawlTimeoutMs = 5000;
-		TitleFetcher.numThreads = 1;
-		TitleFetcher.verbose = false;
-	}
-	
-	TitleFetcher(String directoryPath, int crawlTimeoutMs, int numThreads, boolean verbose) {
-		TitleFetcher.directoryPath = directoryPath;
-		TitleFetcher.numThreads = numThreads;
-		TitleFetcher.crawlTimeoutMs = crawlTimeoutMs;
-		TitleFetcher.verbose = verbose;
-	}
+	private static int crawlTimeoutMs = 6000;
+	private static boolean verbose = true;	
 	
 	public static void main(String[] args) throws IOException{
-		directoryPath = args[0];
+		// TODO Add Input validation
 		crawlTimeoutMs = Integer.parseInt(args[1]);
-		numThreads = Integer.parseInt(args[2]);
 		verbose = Boolean.parseBoolean(args[3]);
-		TitleFetcher.fetchTitles();
+		TitleFetcher.fetchTitles(args[0], Integer.parseInt(args[2]));
 	}
 	
-	public static void fetchTitles() throws IOException {		
-		long startTime = System.nanoTime();
-		int crawlTimeoutMs = 5000;
-		File[] directory = new File(directoryPath).listFiles();	
-	
+	public static void fetchTitles(String inputdir, int numThreads) throws IOException {		
+		System.out.println("Beginning crawl of embedded links");
+		long startTime = System.nanoTime();	
 		int matchCount = 0, titleCount = 0, tweetCount = 0;
 		int fileCount = 0; 
-		for (File file : directory) {
-			
+		File[] directory = new File(inputdir).listFiles();
+		
+		for (File file : directory) {	
 			// prevent any unwanted files from getting in
 			
-			// TODO replace guard with regular expression match
-			if (file.getName().equals("hashedTweets.txt") || file.getName().equals(".DS_Store")) {
+			if (file.getName().equals("hashedTweets.txt") || file.getName().equals(".DS_Store")) { // TODO replace guard with regular expression match
 				if (verbose) {
 					System.out.println("Skipping " + file.getName());
 				}
@@ -99,14 +80,18 @@ public class TitleFetcher {
 				++tweetCount;
 				JSONObject tweet = inputJsonQueue.remove();
 				
-				if (!tweet.containsKey("linkTitle") && 
-					!tweet.containsKey("hasBadLink")) { // only consider new tweets
+				if (!tweet.containsKey("linkTitle") && !tweet.containsKey("hasBadLink")) { // only consider new tweets
 					String text = tweet.get("text").toString();
 					String maybeUrlString = getUrlString(text); // read maybe as "could be null or..."
 					
 					if (maybeUrlString != null) {
 						++matchCount;
 						String urlString = maybeUrlString;
+						
+						if (verbose) {
+							System.out.println("URL: " + urlString);
+						}
+						
 						String maybeTitleOrEmpty = getTitle(urlString);
 						
 						if (maybeTitleOrEmpty != null) {
@@ -116,12 +101,14 @@ public class TitleFetcher {
 								++titleCount;
 								String title = titleOrEmpty;
 								tweet.put("linkTitle", title);
+								
 								if (verbose) {
-									System.out.println("Added title \"" + title + "\" from tweet "
+									System.out.println("Title: \"" + title + "\" from tweet "
 											+ Integer.toString(tweetCount));
 								}
+								
 							} else {
-								tweet.put("hasBadLink", true);
+								tweet.put("hasBadLink", true); 
 							}
 						}
 					}
@@ -166,6 +153,9 @@ public class TitleFetcher {
 			title = doc.title();
 		} catch (IOException e) {
 			title = "";
+			if (verbose) {
+				System.out.println(e.getMessage());
+			}
 		}
 		
 		return title;
@@ -180,6 +170,9 @@ public class TitleFetcher {
 		
 		for (String word : words) try {
 			URL url = new URL(word); // uses the built in parsing abilities of the URL constructor
+			
+			// TODO handle urls ending in '.'
+			
 			urlString = url.toString(); // but just returns a string
 		} catch(MalformedURLException e) {
 			// Exception-based control flow FTW

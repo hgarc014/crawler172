@@ -121,6 +121,9 @@ public class Crawler extends Thread {
 						info.getHashWriter().close();
 						info.getTweetWriter().close();
 						// System.exit(0);
+						
+						TitleFetcher.fetchTitles(info.getOutputdir(), info.getNumThreads());
+						
 						twitterStream.shutdown();
 						twitterStream.cleanUp();
 					}
