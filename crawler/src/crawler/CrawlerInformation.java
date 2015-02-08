@@ -111,8 +111,15 @@ public class CrawlerInformation {
 		++fileNumber;
 		fileName = "tweets" + fileNumber + ".json";
 		tweetFile = new File(outputdir + "/" + fileName);
-		tweetWriter.close();
-		tweetWriter = new FileWriter(outputdir + "/" + fileName, true);
+		try {
+			tweetWriter.close();
+			tweetWriter = new FileWriter(outputdir + "/" + fileName, true);
+		} catch (IOException e) {
+			e.printStackTrace();
+			if (tweetWriter != null)
+				tweetWriter.close();
+		}
+
 	}
 
 	private int fileNumber = 0;
@@ -159,6 +166,24 @@ public class CrawlerInformation {
 		this.maxTweets = maxTweets;
 		this.outputdir = outputdir;
 		this.numThreads = numThreads;
+	}
+
+	public void closeTweetWriter() {
+		try {
+			if (tweetWriter != null)
+				tweetWriter.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void closeHashWriter() {
+		try {
+			if (hashWriter != null)
+				hashWriter.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 }

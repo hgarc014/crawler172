@@ -20,6 +20,7 @@ public class Crawler extends Thread {
 	long time;
 	String threadName = null;
 	private Thread t;
+	 Boolean notfinished=true;
 
 	Crawler(CrawlerInformation info, String threadName) throws IOException {
 		this.info = info;
@@ -55,7 +56,7 @@ public class Crawler extends Thread {
 	}
 
 	// called when saving a valid tweet
-	public void saveTweet(Status status) throws IOException {
+	public void saveTweet(Status status) {
 
 		// check if the given file is still less than the max file size
 		// If the file size is larger than it will loop until it finds a file
@@ -66,7 +67,11 @@ public class Crawler extends Thread {
 					+ info.getTweetFile().getName() + " has reached "
 					+ getSize(info.getTweetFile().length())
 					+ " creating new file...");
-			info.updateTweetFile();
+			try {
+				info.updateTweetFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 		try {
 			// create json object of tweet
@@ -75,6 +80,9 @@ public class Crawler extends Thread {
 			info.getTweetWriter().write(tweet.toString() + "\n");
 		} catch (JSONException e) {
 			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+			info.closeTweetWriter();
 		} finally {
 			// increment tweets obtained
 			info.incrementTweetsObtained();
@@ -104,7 +112,7 @@ public class Crawler extends Thread {
 
 		filter.language(languages);
 		filter.locations(locations);
-
+		
 		StatusListener listener = new StatusListener() {
 			@Override
 			public void onStatus(Status status) {
@@ -113,13 +121,16 @@ public class Crawler extends Thread {
 					// if obtained tweets are larger or equal than max tweets
 					// exit system
 					if (info.getTweetsObtained() >= info.getMaxTweets()) {
+						if(notfinished){
 						time = System.currentTimeMillis() - time;
 						time /= 1000;
 						System.out.println(threadName + ": Obtained "
 								+ info.getTweetsObtained() + " tweets in "
 								+ getTimeAgo(time));
-						info.getHashWriter().close();
-						info.getTweetWriter().close();
+						info.closeHashWriter();
+						info.closeTweetWriter();
+						notfinished=false;
+						}
 						// System.exit(0);
 						
 						TitleFetcher.fetchTitles(info.getOutputdir(), info.getNumThreads());
@@ -147,6 +158,8 @@ public class Crawler extends Thread {
 										+ ": Tweet has already been crawled, moving to next tweet...");
 				} catch (IOException e) {
 					e.printStackTrace();
+					info.closeHashWriter();
+					info.closeTweetWriter();
 				}
 			}
 
