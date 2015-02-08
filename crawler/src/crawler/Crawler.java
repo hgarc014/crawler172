@@ -130,7 +130,7 @@ public class Crawler extends Thread {
 							}
 							time = System.currentTimeMillis() - time;
 							time /= 1000;
-							System.out.println(threadName + ": Obtained "
+							System.out.println("Obtained "
 									+ info.getTweetsObtained() + " tweets in "
 									+ getTimeAgo(time));
 							info.closeHashWriter();

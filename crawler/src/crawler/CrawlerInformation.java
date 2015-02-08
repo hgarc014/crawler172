@@ -13,6 +13,49 @@ import twitter4j.Status;
 
 public class CrawlerInformation {
 
+	private ConcurrentLinkedQueue<Status> tweetsToSave = new ConcurrentLinkedQueue<Status>();
+	private ConcurrentLinkedQueue<Long> hashsToSave = new ConcurrentLinkedQueue<Long>();
+
+	private int fileNumber = 0;
+	private int numThreads = 1;
+	private int convertToMB = 1000000;
+
+	private long fileSizes = 0;
+	private long tweetsObtained = 0;
+	private long tweetsSaved = 0;
+	private long maxTweets = 0;
+
+	private String outputdir = null;
+	private String fileName = "tweets" + fileNumber + ".json";
+	private String hashName = "hashedTweets.txt";
+
+	private FileWriter hashWriter = null;
+	private FileWriter tweetWriter = null;
+	private File tweetFile = null;
+
+	private HashMap<Long, Integer> hash = null;
+	private FilterQuery filter = null;
+
+	private String accToken = "2995123279-tPsou5RS11xE1I682qUtKiIYCRx4FeKCG4rXiGb";
+	private String accTokensec = "pQfusO6QK6D8TwkN1MYorMjJWl2brx6fSj6CSfynK0Asw";
+	private String consumer = "GQMH51Jbw075KnlYrcgSqPjhb";
+	private String consumersec = "DCKu6VdwUgokz8drPmWqR6mFTBeDc6yyd7eoDMU23u0kUcYxm9";
+
+	private Boolean notFinished = true;
+
+	CrawlerInformation(long fileSizes, long maxTweets, String outputdir,
+			int numThreads, HashMap<Long, Integer> hash,
+			FileWriter tweetWriter, FileWriter hashWriter, File tweetFile) {
+		this.fileSizes = fileSizes * convertToMB;
+		this.maxTweets = maxTweets;
+		this.outputdir = outputdir;
+		this.numThreads = numThreads;
+		this.hash = hash;
+		this.tweetWriter = tweetWriter;
+		this.hashWriter = hashWriter;
+		this.tweetFile = tweetFile;
+	}
+
 	public int getFileNumber() {
 		return fileNumber;
 	}
@@ -32,7 +75,7 @@ public class CrawlerInformation {
 	public void incrementTweetsObtained() {
 		++tweetsObtained;
 	}
-	
+
 	public long getTweetsSaved() {
 		return tweetsSaved;
 	}
@@ -133,47 +176,20 @@ public class CrawlerInformation {
 		}
 
 	}
-	
-	public ConcurrentLinkedQueue<Status> getTweetList(){
+
+	public ConcurrentLinkedQueue<Status> getTweetList() {
 		return tweetsToSave;
 	}
-	public ConcurrentLinkedQueue<Long> getHashList(){
+
+	public ConcurrentLinkedQueue<Long> getHashList() {
 		return hashsToSave;
 	}
-	
-	private ConcurrentLinkedQueue<Status> tweetsToSave = new ConcurrentLinkedQueue<Status>();
-	private ConcurrentLinkedQueue<Long> hashsToSave = new ConcurrentLinkedQueue<Long>();
-	private int fileNumber = 0;
-	private int numThreads = 1;
-
-	private long fileSizes = 0;
-	private long tweetsObtained = 0;
-	private long tweetsSaved = 0;
-	private long maxTweets = 0;
-
-	private String outputdir = null;
-	private String fileName = "tweets" + fileNumber + ".json";
-	private String hashName = "hashedTweets.txt";
-
-	private FileWriter hashWriter = null;
-	private FileWriter tweetWriter = null;
-	private File tweetFile = null;
-
-	private HashMap<Long, Integer> hash = null;
-	private FilterQuery filter = null;
-
-	private String accToken = "2995123279-tPsou5RS11xE1I682qUtKiIYCRx4FeKCG4rXiGb";
-	private String accTokensec = "pQfusO6QK6D8TwkN1MYorMjJWl2brx6fSj6CSfynK0Asw";
-	private String consumer = "GQMH51Jbw075KnlYrcgSqPjhb";
-	private String consumersec = "DCKu6VdwUgokz8drPmWqR6mFTBeDc6yyd7eoDMU23u0kUcYxm9";
-
-	private Boolean notFinished = true;
 
 	public Boolean getNotFinished() {
 		return notFinished;
 	}
-	
-	public void setNotFinished(Boolean notFinished){
+
+	public void setNotFinished(Boolean notFinished) {
 		this.notFinished = notFinished;
 	}
 
@@ -191,14 +207,6 @@ public class CrawlerInformation {
 
 	public String getConsumersec() {
 		return consumersec;
-	}
-
-	CrawlerInformation(long fileSizes, long maxTweets, String outputdir,
-			int numThreads) {
-		this.fileSizes = fileSizes;
-		this.maxTweets = maxTweets;
-		this.outputdir = outputdir;
-		this.numThreads = numThreads;
 	}
 
 	public void closeTweetWriter() {

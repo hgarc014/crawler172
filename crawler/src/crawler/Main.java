@@ -14,7 +14,6 @@ public class Main extends Thread {
 			InterruptedException {
 
 		int fileNumber = 0;
-		int convertToMB = 1000000;
 		int threads;
 		long fileSizes;
 
@@ -43,18 +42,6 @@ public class Main extends Thread {
 		threads = checkNumber(args[2], "Threads");
 		outputdir = args[3];
 
-		if (fileSizes <= 0) {
-			System.out.println("WHOA! You passed in " + fileSizes
-					+ " for file size. We are going to make it 1mb");
-			fileSizes = 1;
-		}
-		fileSizes *= convertToMB;
-
-		if (threads <= 0) {
-			System.out.println("WHOA! You passed in " + threads
-					+ " for threads. We are going to make it 1");
-			threads = 1;
-		}
 		File fillHash = new File(outputdir + "/" + hashName);
 		if (fillHash.isFile()) {
 			System.out.println(hashName
@@ -71,21 +58,18 @@ public class Main extends Thread {
 		tweetWriter = new FileWriter(outputdir + "/" + fileName, true);
 		tweetFile = new File(outputdir + "/" + fileName);
 
-		CrawlerInformation info = new CrawlerInformation(fileSizes, maxTweets, outputdir, threads);
-		info.setHash(hash);
-		info.setTweetWriter(tweetWriter);
-		info.setHashWriter(hashWriter);
-		info.setTweetFile(tweetFile);
+		CrawlerInformation info = new CrawlerInformation(fileSizes, maxTweets,
+				outputdir, threads, hash, tweetWriter, hashWriter, tweetFile);
 
-		 for (int i = 0; i < threads; ++i) {
-		 Crawler c = new Crawler(info, "Thread-" + i);
-		 c.start();
-		 }
+		for (int i = 0; i < threads; ++i) {
+			Crawler c = new Crawler(info, "Thread-" + i);
+			c.start();
+		}
 
-//		Crawler c = new Crawler(info, "TweetCrawler");
-//		c.run();
-//		c.start();
-//		c.join();
+		// Crawler c = new Crawler(info, "TweetCrawler");
+		// c.run();
+		// c.start();
+		// c.join();
 	}
 
 	public static Integer checkNumber(String convert, String name) {
