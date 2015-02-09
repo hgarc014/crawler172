@@ -61,13 +61,14 @@ public class Main extends Thread {
 		CrawlerInformation info = new CrawlerInformation(fileSizes, maxTweets,
 				outputdir, threads, hash, tweetWriter, hashWriter, tweetFile);
 
-		for (int i = 0; i < threads; ++i) {
-			Crawler c = new Crawler(info, "Thread-" + i);
-			c.start();
-		}
+//		for (int i = 0; i < threads; ++i) {
+//			Crawler c = new Crawler(info, "Thread-" + i);
+//			c.start();
+//		}
 
-		// Crawler c = new Crawler(info, "TweetCrawler");
-		// c.run();
+		 Crawler c = new Crawler(info, "TweetCrawler");
+		 c.run();
+		 
 		// c.start();
 		// c.join();
 	}

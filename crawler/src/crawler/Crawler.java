@@ -15,7 +15,7 @@ import twitter4j.TwitterStreamFactory;
 import twitter4j.UserMentionEntity;
 import twitter4j.auth.AccessToken;
 
-public class Crawler extends Thread {
+public class Crawler /*extends Thread */{
 	CrawlerInformation info = null;
 	long time;
 	String threadName = null;
@@ -282,11 +282,11 @@ public class Crawler extends Thread {
 			return t / 86400 + " days";
 	}
 
-	public void start() {
-		System.out.println("Starting " + threadName);
-		if (t == null) {
-			t = new Thread(this, threadName);
-			t.start();
-		}
-	}
+//	public void start() {
+//		System.out.println("Starting " + threadName);
+//		if (t == null) {
+//			t = new Thread(this, threadName);
+//			t.start();
+//		}
+//	}
 }
