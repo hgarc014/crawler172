@@ -139,8 +139,7 @@ public class Crawler /*extends Thread */{
 						}
 						// System.exit(0);
 
-						TitleFetcher.fetchTitles(info.getOutputdir(),
-								info.getNumThreads());
+						TitleFetcher.fetchTitles(info.getOutputdir(),info.getNumThreads());
 
 						twitterStream.shutdown();
 						twitterStream.cleanUp();

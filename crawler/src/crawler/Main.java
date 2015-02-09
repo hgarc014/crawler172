@@ -43,11 +43,12 @@ public class Main extends Thread {
 		fileSizes = checkNumber(args[1], "File Sizes(MB)");
 		threads = checkNumber(args[2], "Threads");
 		outputdir = args[3];
-		System.err.println("argsLengt: " + args.length);
-		if(args.length > 4)
+		
+		if (args.length > 4)
 			saveEvery = checkNumber(args[4], "Check Every # Tweets");
 
 		File fillHash = new File(outputdir + "/" + hashName);
+		
 		if (fillHash.isFile()) {
 			System.out.println(hashName
 					+ " was found, Importing already searched Tweets");
@@ -66,16 +67,10 @@ public class Main extends Thread {
 		CrawlerInformation info = new CrawlerInformation(fileSizes, maxTweets,
 				outputdir, threads, hash, tweetWriter, hashWriter, tweetFile, saveEvery);
 
-//		for (int i = 0; i < threads; ++i) {
-//			Crawler c = new Crawler(info, "Thread-" + i);
-//			c.start();
-//		}
 
 		 Crawler c = new Crawler(info, "TweetCrawler");
 		 c.run();
-		 
-		// c.start();
-		// c.join();
+	
 	}
 
 	public static Integer checkNumber(String convert, String name) {
