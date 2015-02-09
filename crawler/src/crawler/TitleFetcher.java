@@ -12,6 +12,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
@@ -44,7 +45,7 @@ public class TitleFetcher {
 				// file is good, set things up and load it
 
 				++fileCount;
-				ConcurrentLinkedQueue<JSONObject> inputJsonQueue = new ConcurrentLinkedQueue<JSONObject>();
+				ArrayList<JSONObject> inputJsonArray = new ArrayList<JSONObject>();
 				ConcurrentLinkedQueue<JSONObject> outputJsonQueue = new ConcurrentLinkedQueue<JSONObject>();
 				JSONParser parser = new JSONParser();
 				BufferedReader jsonReader = null;
@@ -59,7 +60,7 @@ public class TitleFetcher {
 				for (String line; (line = jsonReader.readLine()) != null;) { // throws
 					try {
 						JSONObject json = (JSONObject) parser.parse(line);
-						inputJsonQueue.add(json);
+						inputJsonArray.add(json);
 					} catch (ParseException e) {
 						if (verbose) {
 							System.out.println(e.getMessage());
@@ -70,8 +71,10 @@ public class TitleFetcher {
 
 				
 				ExecutorService executor = Executors.newFixedThreadPool(numThreads);
-				while (!inputJsonQueue.isEmpty()) {
-					Runnable worker = new TitleFetchWorker(inputJsonQueue, outputJsonQueue,
+				Iterator<JSONObject> iterJson = inputJsonArray.iterator();
+				while (iterJson.hasNext()) {
+					JSONObject json = iterJson.next();
+					Runnable worker = new TitleFetchWorker(json, outputJsonQueue,
 													      matchCount, titleCount, tweetCount, verbose);
 					executor.execute(worker);
 				}

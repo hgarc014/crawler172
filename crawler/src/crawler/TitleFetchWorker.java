@@ -11,16 +11,17 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 public class TitleFetchWorker implements Runnable {
-	private ConcurrentLinkedQueue<JSONObject> inputJsonQueue, outputJsonQueue;
+	private JSONObject json;
+	private ConcurrentLinkedQueue<JSONObject> outputJsonQueue;
 	private AtomicInteger matchCount, titleCount, tweetCount; 
 	private boolean verbose;
 	
-	public TitleFetchWorker(ConcurrentLinkedQueue<JSONObject> a, 
+	public TitleFetchWorker(JSONObject a, 
 			                ConcurrentLinkedQueue<JSONObject> b,
 			                AtomicInteger c, AtomicInteger d,
 			                AtomicInteger e, boolean f) 
 	{
-		this.inputJsonQueue = a;
+		this.json = a;
 		this.outputJsonQueue = b;
 		this.matchCount = c;
 		this.titleCount = d;
@@ -35,61 +36,55 @@ public class TitleFetchWorker implements Runnable {
 
 	private void processJson() {
 		
-		// pop the tweet, process it, add it to the list
-		JSONObject maybeTweet = inputJsonQueue.poll();
+		JSONObject tweet = this.json;
+		tweetCount.incrementAndGet();
+		if (!tweet.containsKey("linkTitle")
+				&& !tweet.containsKey("hasBadLink")) { // only consider new tweets
+			String text = tweet.get("text").toString();
+			String maybeUrlString = getUrlStringFrom(text); // read maybe as "could be null or..."
 
-		if (maybeTweet != null) {
-			JSONObject tweet = maybeTweet;
-			tweetCount.incrementAndGet();
-			if (!tweet.containsKey("linkTitle")
-					&& !tweet.containsKey("hasBadLink")) { // only consider new tweets
-				String text = tweet.get("text").toString();
-				String maybeUrlString = getUrlString(text); // read maybe as "could be null or..."
+			if (maybeUrlString != null) {
+				matchCount.incrementAndGet();
+				String urlString = maybeUrlString;
 
-				if (maybeUrlString != null) {
-					matchCount.incrementAndGet();
-					String urlString = maybeUrlString;
+				if (verbose) {
+					System.out.println("URL: " + urlString);
+				}
 
-					if (verbose) {
-						System.out.println("URL: " + urlString);
-					}
+				String maybeTitleOrEmpty = getTitleFrom(urlString);
 
-					String maybeTitleOrEmpty = getTitle(urlString);
+				if (maybeTitleOrEmpty != null) {
+					String titleOrEmpty = maybeTitleOrEmpty;
 
-					if (maybeTitleOrEmpty != null) {
-						String titleOrEmpty = maybeTitleOrEmpty;
+					if (!titleOrEmpty.isEmpty()) {
+						titleCount.incrementAndGet();
+						String title = titleOrEmpty;
+						tweet.put("linkTitle", title);
 
-						if (!titleOrEmpty.isEmpty()) {
-							titleCount.incrementAndGet();
-							String title = titleOrEmpty;
-							tweet.put("linkTitle", title);
-
-							if (verbose) {
-								System.out.println("Title: \"" + title
-										+ "\" from tweet "
-										+ tweetCount.toString());
-							}
-
-						} else {
-							tweet.put("hasBadLink", true);
+						if (verbose) {
+							System.out.println("Title: \"" + title
+									+ "\" from tweet "
+									+ tweetCount.get());
 						}
+
+					} else {
+						tweet.put("hasBadLink", true);
 					}
 				}
 			}
-			outputJsonQueue.add(tweet);
 		}
+		outputJsonQueue.add(tweet);
+		return;
 	}
 	
 	// follows the link specified by url and if the response is html, returns
 		// the title as a string
-		public String getTitle(String urlString) {
+		public String getTitleFrom(String urlString) {
 			String title = null;
 			try {
-				System.out.println("Waiting to connect");
 				Document doc = Jsoup.connect(urlString).timeout(5000).get();
-				System.out.println("Connected");
 				title = doc.title();
-			} catch (Exception e) { // TODO change back to IOException when debugged
+			} catch (IOException e) { 
 				title = "";
 				if (this.verbose) {
 					System.out.println(e.getMessage());
@@ -102,8 +97,7 @@ public class TitleFetchWorker implements Runnable {
 		// attempts to find the last url in a string of text, returns null otherwise
 		// based on a snippet found at
 		// http://stackoverflow.com/questions/285619/how-to-detect-the-presence-of-url-in-a-string
-		// might still be cases where the regex results in an invalid url
-		public String getUrlString(String text) {
+		public String getUrlStringFrom(String text) {
 			String[] words = text.split("\\s+|”|\"");
 			String urlString = null;
 

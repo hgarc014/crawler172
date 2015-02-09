@@ -67,14 +67,13 @@ public class Main extends Thread {
 		//}
 		
 			
-		while(c.isAlive()) {/* busy wait*/}
 			
-		System.out.println("Yolo");
 			
 		// Crawler c = new Crawler(info, "TweetCrawler");
 		// c.run();
 		// c.start();
 		// c.join();
+		// while(c.isAlive()) {/* busy wait*/}
 	}
 
 	public static Integer checkNumber(String convert, String name) {
