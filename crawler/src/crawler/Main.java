@@ -16,6 +16,7 @@ public class Main extends Thread {
 		int fileNumber = 0;
 		int threads;
 		long fileSizes;
+		int saveEvery = 100;
 
 		String outputdir;
 		String fileName = "tweets" + fileNumber + ".json";
@@ -34,6 +35,7 @@ public class Main extends Thread {
 			System.out.println("length: " + args.length);
 			System.out
 					.println("<Max Tweets> <File Sizes (MB)> <Threads> <Output Directory>");
+			System.out.println("OR...\n<Max Tweets> <File Sizes (MB)> <Threads> <Output Directory> <save Every # Tweets>");
 			return;
 		}
 
@@ -41,6 +43,9 @@ public class Main extends Thread {
 		fileSizes = checkNumber(args[1], "File Sizes(MB)");
 		threads = checkNumber(args[2], "Threads");
 		outputdir = args[3];
+		System.err.println("argsLengt: " + args.length);
+		if(args.length > 4)
+			saveEvery = checkNumber(args[4], "Check Every # Tweets");
 
 		File fillHash = new File(outputdir + "/" + hashName);
 		if (fillHash.isFile()) {
@@ -59,7 +64,7 @@ public class Main extends Thread {
 		tweetFile = new File(outputdir + "/" + fileName);
 
 		CrawlerInformation info = new CrawlerInformation(fileSizes, maxTweets,
-				outputdir, threads, hash, tweetWriter, hashWriter, tweetFile);
+				outputdir, threads, hash, tweetWriter, hashWriter, tweetFile, saveEvery);
 
 //		for (int i = 0; i < threads; ++i) {
 //			Crawler c = new Crawler(info, "Thread-" + i);

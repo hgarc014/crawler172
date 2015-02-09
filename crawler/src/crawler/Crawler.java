@@ -145,7 +145,7 @@ public class Crawler /*extends Thread */{
 						twitterStream.shutdown();
 						twitterStream.cleanUp();
 					} else if (!info.getTweetList().isEmpty()
-							&& (info.getTweetsObtained() % 100) == 0) {
+							&& (info.getTweetsObtained() % info.getSaveEvery()) == 0) {
 						while (!info.getTweetList().isEmpty()) {
 							saveTweet(info.getTweetList().remove());
 						}

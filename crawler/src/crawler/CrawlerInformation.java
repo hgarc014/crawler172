@@ -19,6 +19,7 @@ public class CrawlerInformation {
 	private int fileNumber = 0;
 	private int numThreads = 1;
 	private int convertToMB = 1000000;
+	private int saveEvery = 0;
 
 	private long fileSizes = 0;
 	private long tweetsObtained = 0;
@@ -45,7 +46,7 @@ public class CrawlerInformation {
 
 	CrawlerInformation(long fileSizes, long maxTweets, String outputdir,
 			int numThreads, HashMap<Long, Integer> hash,
-			FileWriter tweetWriter, FileWriter hashWriter, File tweetFile) {
+			FileWriter tweetWriter, FileWriter hashWriter, File tweetFile, int saveEvery) {
 		this.fileSizes = fileSizes * convertToMB;
 		this.maxTweets = maxTweets;
 		this.outputdir = outputdir;
@@ -54,8 +55,12 @@ public class CrawlerInformation {
 		this.tweetWriter = tweetWriter;
 		this.hashWriter = hashWriter;
 		this.tweetFile = tweetFile;
+		this.saveEvery=saveEvery;
 	}
 
+	public int getSaveEvery(){
+		return saveEvery;
+	}
 	public int getFileNumber() {
 		return fileNumber;
 	}

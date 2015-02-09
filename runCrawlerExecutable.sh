@@ -2,13 +2,15 @@
 
 if  [ -z $1 ] || [ -z $2 ] || [ -z $3 ] || [ -z $4 ] ;then
     echo "./runCrawlerExecutable.sh <Tweets> <File Sizes (mb)> <Threads> <outputdir>"
+    echo "OR..."
+    echo "./runCrawlerExecutable.sh <Tweets> <File Sizes (mb)> <Threads> <outputdir> <save Every # Tweets>"
     exit
 fi
 
 
 if [ -d "$4" ];then
     START=$(date +%s)
-    java -jar crawler.jar $1 $2 $3 $4
+    java -jar crawler.jar $1 $2 $3 $4 $5
 else
     echo "seems you provided an invalid directory"
 fi
