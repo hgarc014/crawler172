@@ -2,6 +2,9 @@ package crawler;
 
 import java.io.IOException;
 import java.util.Arrays;
+
+import org.json.simple.JSONArray;
+
 import twitter4j.FilterQuery;
 import twitter4j.HashtagEntity;
 import twitter4j.JSONException;
@@ -51,6 +54,7 @@ public class Crawler /*extends Thread */{
 		j.put("text", status.getText());
 		j.put("is_truncated", status.isTruncated());
 		j.put("user", status.getUser());
+		j.put("hashtags",status.getHashtagEntities());
 
 		return j;
 	}
