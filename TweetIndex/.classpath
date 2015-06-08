@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" output="target/classes" path="src">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="bin/hamcrest-core-1.1.jar"/>
+	<classpathentry kind="lib" path="bin/javax.servlet-3.0.0.v201112011016.jar"/>
+	<classpathentry kind="lib" path="bin/jetty-http-9.0.2.v20130417.jar"/>
+	<classpathentry kind="lib" path="bin/jetty-io-9.0.2.v20130417.jar"/>
+	<classpathentry kind="lib" path="bin/jetty-security-9.0.2.v20130417.jar"/>
+	<classpathentry kind="lib" path="bin/jetty-server-9.0.2.v20130417.jar"/>
+	<classpathentry kind="lib" path="bin/jetty-servlet-9.0.2.v20130417.jar"/>
+	<classpathentry kind="lib" path="bin/jetty-util-9.0.2.v20130417.jar"/>
+	<classpathentry kind="lib" path="bin/jetty-webapp-9.0.2.v20130417.jar"/>
+	<classpathentry kind="lib" path="bin/jetty-xml-9.0.2.v20130417.jar"/>
+	<classpathentry kind="lib" path="bin/json-simple-1.1.1.jar"/>
+	<classpathentry kind="lib" path="bin/junit-4.10.jar"/>
+	<classpathentry kind="lib" path="bin/slf4j-api-1.7.7.jar"/>
+	<classpathentry kind="lib" path="bin/slf4j-simple-1.7.7.jar"/>
+	<classpathentry kind="lib" path="bin/spark-core-2.1.jar"/>
+	<classpathentry kind="lib" path="bin/lucene-analyzers-common-4.10.1.jar"/>
+	<classpathentry kind="lib" path="bin/lucene-core-4.10.1.jar"/>
+	<classpathentry kind="lib" path="bin/lucene-queryparser-4.10.1.jar"/>
+	<classpathentry kind="output" path="target/classes"/>
+</classpath>

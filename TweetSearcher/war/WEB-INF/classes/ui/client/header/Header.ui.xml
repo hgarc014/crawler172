@@ -1,0 +1,19 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+	xmlns:g="urn:import:com.google.gwt.user.client.ui" xmlns:w="urn:import:com.google.gwt.widget.client">
+	<ui:style>
+	
+	</ui:style>
+
+	<ui:with field='css' type='ui.client.resources.CSSAndImageResources' />
+	<g:VerticalPanel>
+		<g:Image ui:field="image" styleName="{css.main.center}" resource="{css.headerImg}" />
+		<g:HTMLPanel styleName="{css.header.pageAlign}">
+			<g:HorizontalPanel ui:field="main">
+				<g:TextBox ui:field="searchText" />
+				<g:ListBox ui:field="type" />
+				<g:Button ui:field="searchButton" styleName="{css.main.button}">Search</g:Button>
+			</g:HorizontalPanel>
+		</g:HTMLPanel>
+	</g:VerticalPanel>
+</ui:UiBinder>
