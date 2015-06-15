@@ -1,0 +1,3 @@
+# Module tweetsearcher
+# RPC service class, partial path of RPC policy file
+ui.client.services.LuceneService, 87B9AB6BDC84D97033204621E9464BA1.gwt.rpc

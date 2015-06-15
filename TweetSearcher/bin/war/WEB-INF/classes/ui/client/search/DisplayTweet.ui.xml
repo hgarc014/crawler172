@@ -1,0 +1,35 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+	xmlns:g="urn:import:com.google.gwt.user.client.ui" xmlns:w="urn:import:com.google.gwt.widget.client">
+	<ui:style>
+	
+	</ui:style>
+
+	<ui:with field='css' type='ui.client.resources.CSSAndImageResources' />
+	<g:HTMLPanel styleName="{css.main.sep} {css.main.hover}" ui:field="mainPanel">
+		<g:HTMLPanel>
+			<g:Anchor ui:field="linkTitle" styleName="{css.main.center} {css.main.largeText}" />
+		</g:HTMLPanel>
+		<g:HorizontalPanel>
+			<g:VerticalPanel styleName="{css.main.sameWidth}">
+				<g:Image ui:field="userImg" styleName="{css.main.center}"/>
+				<g:Anchor ui:field="userName" styleName="{css.main.pointer} {css.main.center}"/>
+				<g:Label ui:field="creation" styleName="{css.main.nowrap}" />
+				<g:HorizontalPanel ui:field="retweetPanel">
+					<g:Label>Retweets:</g:Label>
+					<g:Label ui:field="retweets" />
+				</g:HorizontalPanel>
+				<g:HorizontalPanel ui:field="favoritePanel">
+					<g:Label>Favorites:</g:Label>
+					<g:Label ui:field="favorites" />
+				</g:HorizontalPanel>
+			</g:VerticalPanel>
+
+			<g:VerticalPanel styleName="{css.main.sepLeft}">
+				<g:Label ui:field="body" />
+				<g:HorizontalPanel ui:field="tags" spacing="10" />
+			</g:VerticalPanel>
+
+		</g:HorizontalPanel>
+	</g:HTMLPanel>
+</ui:UiBinder>

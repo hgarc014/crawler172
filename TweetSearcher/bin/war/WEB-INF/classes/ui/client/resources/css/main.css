@@ -1,0 +1,51 @@
+.button {
+	color: green;
+	cursor: pointer;
+}
+
+.button:hover {
+	color: blue;
+}
+
+.sep{
+	margin:10px;
+}
+
+.sepLeft{
+	margin-left: 20px;
+}
+
+.center {
+	text-align: center;
+	margin-left: auto;
+	margin-right: auto;
+	display: block;
+}
+
+.largeText{
+	font-size:150%;
+}
+
+.pointer{
+	cursor:pointer;
+}
+
+.hover{
+	
+}
+.hover:hover{
+	background-color: #E7F3FF;
+	box-shadow: 0px 0px 9px 4px rgb(170, 170, 170);
+}
+
+.nowrap{
+	white-space: nowrap;
+}
+
+.standout{
+	background-color: #E7F3FF;
+}
+
+.sameWidth{
+	min-width:80px;
+}

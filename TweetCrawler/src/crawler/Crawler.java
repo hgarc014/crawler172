@@ -2,6 +2,8 @@ package crawler;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.json.simple.JSONArray;
 
@@ -18,7 +20,7 @@ import twitter4j.TwitterStreamFactory;
 import twitter4j.UserMentionEntity;
 import twitter4j.auth.AccessToken;
 
-public class Crawler /*extends Thread */{
+public class Crawler /* extends Thread */{
 	CrawlerInformation info = null;
 	long time;
 	String threadName = null;
@@ -54,7 +56,7 @@ public class Crawler /*extends Thread */{
 		j.put("text", status.getText());
 		j.put("is_truncated", status.isTruncated());
 		j.put("user", status.getUser());
-		j.put("hashtags",status.getHashtagEntities());
+		j.put("hashtags", status.getHashtagEntities());
 
 		return j;
 	}
@@ -116,6 +118,17 @@ public class Crawler /*extends Thread */{
 		filter.language(languages);
 		filter.locations(locations);
 
+		final Timer t = new Timer();
+		TimerTask tsk = new TimerTask() {
+
+			@Override
+			public void run() {
+				System.out.println("processed " + info.getTweetsObtained()
+						+ " in " + getTimeAgo(time));
+
+			}
+		};
+
 		StatusListener listener = new StatusListener() {
 			@Override
 			public void onStatus(Status status) {
@@ -132,15 +145,17 @@ public class Crawler /*extends Thread */{
 								info.getHashWriter().write(
 										info.getHashList().remove() + "\n");
 							}
-							time = System.currentTimeMillis() - time;
-							time /= 1000;
+							// time = System.currentTimeMillis() - time;
+							// time /= 1000;
 							System.out.println("Obtained "
 									+ info.getTweetsObtained() + " tweets in "
 									+ getTimeAgo(time));
+							t.cancel();
 							info.closeHashWriter();
 							info.closeTweetWriter();
 							info.setNotFinished(false);
-							TitleFetcher.fetchTitles(info.getOutputdir(),info.getNumThreads());
+							TitleFetcher.fetchTitles(info.getOutputdir(),
+									info.getNumThreads());
 						}
 						// System.exit(0);
 
@@ -151,11 +166,11 @@ public class Crawler /*extends Thread */{
 						while (!info.getTweetList().isEmpty()) {
 							saveTweet(info.getTweetList().remove());
 						}
-						System.out.println(threadName + ": Saving hash ids");
 						while (!info.getHashList().isEmpty()) {
 							info.getHashWriter().write(
 									info.getHashList().remove() + "\n");
 						}
+						System.out.println(threadName + ": Saved hash ids");
 					}
 					// check if the tweet has been crawled
 					else if (!info.getHash().containsKey(status.getId())) {
@@ -169,15 +184,16 @@ public class Crawler /*extends Thread */{
 							info.incrementTweetsObtained();
 							info.getTweetList().add(status);
 
-							System.out
-									.println(threadName
-											+ ": Added Tweet #"
-											+ info.getTweetsObtained()
-											+ " containing location information in to List to be saved!");
-						} else
-							System.out
-									.println(threadName
-											+ ": No Location Information!! Did not save tweet...");
+							// System.out
+							// .println(threadName
+							// + ": Added Tweet #"
+							// + info.getTweetsObtained()
+							// +
+							// " containing location information in to List to be saved!");
+						} /*
+						 * else System.out .println(threadName +
+						 * ": No Location Information!! Did not save tweet...");
+						 */
 					} else
 						System.out
 								.println(threadName
@@ -192,25 +208,25 @@ public class Crawler /*extends Thread */{
 			@Override
 			public void onDeletionNotice(
 					StatusDeletionNotice statusDeletionNotice) {
-				System.out.println("Got a status deletion notice id:"
-						+ statusDeletionNotice.getStatusId());
+				// System.out.println("Got a status deletion notice id:"
+				// + statusDeletionNotice.getStatusId());
 			}
 
 			@Override
 			public void onTrackLimitationNotice(int numberOfLimitedStatuses) {
-				System.out.println("Got track limitation notice:"
-						+ numberOfLimitedStatuses);
+				// System.out.println("Got track limitation notice:"
+				// + numberOfLimitedStatuses);
 			}
 
 			@Override
 			public void onScrubGeo(long userId, long upToStatusId) {
-				System.out.println("Got scrub_geo event userId:" + userId
-						+ " upToStatusId:" + upToStatusId);
+				// System.out.println("Got scrub_geo event userId:" + userId
+				// + " upToStatusId:" + upToStatusId);
 			}
 
 			@Override
 			public void onStallWarning(StallWarning warning) {
-				System.out.println("Got stall warning:" + warning);
+				// System.out.println("Got stall warning:" + warning);
 			}
 
 			@Override
@@ -221,6 +237,7 @@ public class Crawler /*extends Thread */{
 		twitterStream.addListener(listener);
 		// grab current time before starting connection
 		time = System.currentTimeMillis();
+		t.scheduleAtFixedRate(tsk, 60000, 60000);
 		twitterStream.filter(filter);
 	}
 
@@ -274,6 +291,8 @@ public class Crawler /*extends Thread */{
 
 	// return time took to crawl as string
 	public String getTimeAgo(long t) {
+		t = System.currentTimeMillis() - t;
+		t /= 1000;
 		if (t / 60 == 0)
 			return t + " seconds";
 		else if (t / 3600 == 0)
@@ -284,11 +303,11 @@ public class Crawler /*extends Thread */{
 			return t / 86400 + " days";
 	}
 
-//	public void start() {
-//		System.out.println("Starting " + threadName);
-//		if (t == null) {
-//			t = new Thread(this, threadName);
-//			t.start();
-//		}
-//	}
+	// public void start() {
+	// System.out.println("Starting " + threadName);
+	// if (t == null) {
+	// t = new Thread(this, threadName);
+	// t.start();
+	// }
+	// }
 }
