@@ -10,7 +10,7 @@ fi
 
 if [ -d "$4" ];then
     START=$(date +%s)
-    java -jar jars/crawler.jar $1 $2 $3 $4 $5
+    java -jar jars/crawlTweets.jar $1 $2 $3 $4 $5
 
     END=$(date +%s.%N)
     dt=$(echo "$END - $START" | bc)
